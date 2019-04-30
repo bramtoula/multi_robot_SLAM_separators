@@ -1,4 +1,4 @@
-FROM ros:melodic
+FROM ros:melodic-perception
 
 
 WORKDIR /root
@@ -6,7 +6,7 @@ WORKDIR /root
 # Python things
 RUN apt-get update && \
     apt-get install -y python3-pip && \
-    pip3 install tensorflow-gpu opencv-python scipy
+    pip3 install tensorflow opencv-python scipy
 
 # Netvlad tensorflow implementation from UZH-RPG
 RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \

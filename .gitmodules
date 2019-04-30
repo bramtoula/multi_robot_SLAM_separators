@@ -1,0 +1,3 @@
+[submodule "process_netvlad/netvlad_tf_open"]
+	path = process_netvlad/netvlad_tf_open
+	url = https://github.com/bramtoula/netvlad_tf_open
