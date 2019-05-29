@@ -1,0 +1,3 @@
+Number of rejected closures: 269/1565
+Average translation error: 0.8936384515412568
+Average rotation error: 0.6995046855577072
