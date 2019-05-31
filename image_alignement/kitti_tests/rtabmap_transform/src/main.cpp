@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     ULogger::setType(ULogger::kTypeConsole);
     ULogger::setLevel(ULogger::kDebug);
     FILE *pFile = 0;
-    std::string pathCalib =  "calib.txt";
+    std::string pathCalib = "../../calib.txt";
 
     pFile = fopen(pathCalib.c_str(), "r");
     if (!pFile)
@@ -67,10 +67,10 @@ int main(int argc, char *argv[])
                             image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
                             cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
     // StereoCameraModel cam(718.856, 718.856, 607.1928, 185.2157, 0.54, Transform::getIdentity(), cv::Size(1241,376));
-    cv::Mat img_l_1 = cv::imread("image_2/000000.png", CV_8UC1);
-    cv::Mat img_l_2 = cv::imread("image_2/000005.png", CV_8UC1);
-    cv::Mat img_r_1 = cv::imread("image_3/000000.png", CV_8UC1);
-    cv::Mat img_r_2 = cv::imread("image_3/000005.png", CV_8UC1);
+    cv::Mat img_l_1 = cv::imread("../../image_2/000000.png", CV_8UC1);
+    cv::Mat img_l_2 = cv::imread("../../image_2/000005.png", CV_8UC1);
+    cv::Mat img_r_1 = cv::imread("../../image_3/000000.png", CV_8UC1);
+    cv::Mat img_r_2 = cv::imread("../../image_3/000005.png", CV_8UC1);
 
     SensorData frame1(img_l_1,img_r_1,cam);
     SensorData frame2(img_l_2, img_r_2, cam);

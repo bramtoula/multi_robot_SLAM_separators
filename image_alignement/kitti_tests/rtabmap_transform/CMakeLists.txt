@@ -27,7 +27,7 @@ SET(INCLUDE_DIRS
    ${PCL_INCLUDE_DIRS}
 )
 
-SET(SOURCES src/main.cpp src/myRegistration.cpp src/myRegistrationVis.cpp)
+SET(SOURCES src)
 
 IF(QT4_FOUND)
    INCLUDE(${QT_USE_FILE})
@@ -44,6 +44,6 @@ SET(LIBRARIES
 )
 
 
-ADD_EXECUTABLE(est_transform main.cpp ${moc_srcs})
+ADD_EXECUTABLE(est_transform src/main.cpp ${moc_srcs})
 
 TARGET_LINK_LIBRARIES(est_transform ${LIBRARIES})
