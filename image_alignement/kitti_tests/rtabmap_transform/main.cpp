@@ -65,10 +65,10 @@ int main(int argc, char *argv[])
                             image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
                             cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
     // StereoCameraModel cam(718.856, 718.856, 607.1928, 185.2157, 0.54, Transform::getIdentity(), cv::Size(1241,376));
-    cv::Mat img_l_1 = cv::imread("left_1.png", CV_8UC1);
-    cv::Mat img_l_2 = cv::imread("left_2.png", CV_8UC1);
-    cv::Mat img_r_1 = cv::imread("right_1.png", CV_8UC1);
-    cv::Mat img_r_2 = cv::imread("right_2.png", CV_8UC1);
+    cv::Mat img_l_1 = cv::imread("left_0.png", CV_8UC1);
+    cv::Mat img_l_2 = cv::imread("left_5.png", CV_8UC1);
+    cv::Mat img_r_1 = cv::imread("right_0.png", CV_8UC1);
+    cv::Mat img_r_2 = cv::imread("right_5.png", CV_8UC1);
 
     SensorData frame1(img_l_1,img_r_1,cam);
     SensorData frame2(img_l_2, img_r_2, cam);
@@ -76,12 +76,27 @@ int main(int argc, char *argv[])
     ParametersMap params;
 
     Registration *_registrationPipeline;
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpCorrespondenceRatio(), "0.1"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpIterations(), "10"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxCorrespondenceDistance(), "0.3"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxTranslation(), "0"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpPointToPlane(), "true"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpVoxelSize(), "0"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpEpsilon(), "0.01"));
+
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisEstimationType(), "1"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPFlags(), "0"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPReprojError(), "1"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorFlowWinSize(), "15"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorType(), "1"));
+
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kRegStrategy(), "0"));
 
     _registrationPipeline = Registration::create(params);
 
     RegistrationInfo info;
     Transform res = _registrationPipeline->computeTransformation(frame1, frame2, Transform(), &info);
-
-    printf("%s\n",res.prettyPrint().c_str());
+    
+    printf("%s\n", res.prettyPrint().c_str());
     return 0;
 }
