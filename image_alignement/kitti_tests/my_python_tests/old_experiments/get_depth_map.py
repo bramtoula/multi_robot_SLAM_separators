@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 from matplotlib import pyplot as plt
-
+import settings
 
 def read_calib_file(filepath):
     """Read in a calibration file and parse into a dictionary."""
@@ -19,19 +19,19 @@ def read_calib_file(filepath):
 
     return data
 
-
+settings.init()
 # img1_name = "002460.png"
 img1_name = "000000.png"
 print("Reading reference image : ", img1_name)
-imgL = cv2.imread(str('image_2/'+img1_name), 0)
-imgR = cv2.imread(str('image_3/'+img1_name), 0)
+imgL = cv2.imread(str(settings.sequence_path+'image_2/'+img1_name), 0)
+imgR = cv2.imread(str(settings.sequence_path+'image_3/'+img1_name), 0)
 
 stereo = cv2.StereoBM_create(numDisparities=16, blockSize=15)
 disparity = stereo.compute(imgL, imgR)
-# plt.imshow(disparity,'gray')
-# plt.show()
+plt.imshow(disparity,'gray')
+plt.show()
 
-calib = read_calib_file("calib.txt")
+calib = read_calib_file("kitti_data/calib.txt")
 proj_mat_l = calib['P2'].reshape(3, 4)
 proj_mat_r = calib['P3'].reshape(3, 4)
 

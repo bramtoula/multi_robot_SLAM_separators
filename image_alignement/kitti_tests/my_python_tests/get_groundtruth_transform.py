@@ -4,7 +4,7 @@ import numpy as np
 
 def getGtTransform(img_idx1, img_idx2):
     # In the reference frame of the left camera
-    f = open('kitti_data/00.txt')
+    f = open('../kitti_data/00.txt')
     lines = f.readlines()
 
     T1 = np.fromstring(lines[img_idx1],sep=' ').reshape(3,4)

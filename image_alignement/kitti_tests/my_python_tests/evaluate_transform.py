@@ -12,13 +12,13 @@ t_lim = 10.0
 Rot_lim = 45
 for id_pair in closure_ids:
 
-    # if i < 259:
-    #     i += 1
-    #     continue
+    if i < 1300:
+        i += 1
+        continue
     print('Working on closure '+str(i)+' of '+str(len(closure_ids)))
     id1 = id_pair[0]
     id2 = id_pair[1]
-    Rot_err, t_err = compare_est_gt(id1,id2)
+    Rot_err, t_err = compare_est_gt(id1,id2,print_res=True)
     if t_err < t_lim and Rot_err < Rot_lim:
         Rot_errors.append(Rot_err)
         t_errors.append(t_err)

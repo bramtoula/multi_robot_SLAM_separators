@@ -1,6 +1,22 @@
 import cv2
 import numpy as np
 import settings
+from matplotlib import pyplot as plt
+
+def getMatchesImg(img1, kp1, img2, kp2, matches, mask=[]):
+
+	if len(mask) > 0:
+		mask = mask.ravel().tolist()
+
+	out_img = np.empty((max(img1.shape[0], img2.shape[0]),
+                     img1.shape[1]+img2.shape[1], 3), dtype=np.uint8)
+
+	# Draw matches.
+	img3 = cv2.drawMatches(img1, kp1, img2, kp2, matches,
+	                       out_img, matchesMask=mask, flags=2)
+
+	plt.imshow(img3), plt.show()
+	return img3
 
 
 def get3dPoints(matches, kp_l, kp_r, proj_mat_l, proj_mat_r):
@@ -13,7 +29,16 @@ def get3dPoints(matches, kp_l, kp_r, proj_mat_l, proj_mat_r):
         px_right.transpose()
     ).transpose()  # shape: (N, 4)
     points = cv2.convertPointsFromHomogeneous(points).squeeze()
-    return points
+
+    cam_mat_l, rotMatrix_l, transVect_l, rotMatrixX_l, rotMatrixY_l, rotMatrixZ_l, eulerAngles_l = cv2.decomposeProjectionMatrix(proj_mat_l)
+    reproj_points, jacobian = cv2.projectPoints(points,cv2.Rodrigues(rotMatrix_l)[0],cv2.convertPointsFromHomogeneous(transVect_l.transpose()),cam_mat_l,None)
+
+    reproj_points = reproj_points.squeeze()
+    reproj_dist = np.sqrt(np.sum((px_left - reproj_points)**2, axis=1))
+    valid = reproj_dist < 4
+
+
+    return points, valid
 
 def getProjMatrices():
     calib = readCalibFile()
@@ -70,7 +95,7 @@ def getMatches(bf,kp1, desc1, kp2, desc2, matching_distance=40,
     # Sort them in the order of their distance.
     matches = sorted(kept, key=lambda x: x.distance)
 
-    return matches[:settings.matches_kept]
+    return matches#[:settings.matches_kept]
 
 # From  https://github.com/uoip/stereo_ptam
 def circular_stereo_match(
@@ -142,13 +167,16 @@ def getEstTransform(img1_name,img2_name):
     matches12_l = getMatches(bf, kp1_l, desc1_l, kp2_l, desc2_l)
     matches12_r = getMatches(bf, kp1_r, desc1_r, kp2_r, desc2_r)
 
+    getMatchesImg(img1_l, kp1_l, img1_r, kp1_r, matches1_lr, mask=[])
+
+
 
     # Triangulate to get 3D points of both pairs
     # Get projection matrices
     proj_mat_l, proj_mat_r = getProjMatrices()
-    points_3d_1 = get3dPoints(
+    points_3d_1, valid_1 = get3dPoints(
         matches1_lr, kp1_l, kp1_r, proj_mat_l, proj_mat_r)
-    points_3d_2 = get3dPoints(
+    points_3d_2, valid_2 = get3dPoints(
         matches2_lr, kp2_l, kp2_r, proj_mat_l, proj_mat_r)
 
 
@@ -171,11 +199,12 @@ def getEstTransform(img1_name,img2_name):
                 # print(points_3d_1[i])
                 # print(kp1_l[i].pt)
                 # print('\n') 
-                points_3d_1_kept.append(points_3d_1[i])
-                points_2d_2_kept.append(kp2_l[j_l].pt)
-                continue
+                if valid_1[i]:
+                    points_3d_1_kept.append(points_3d_1[i])
+                    points_2d_2_kept.append(kp2_l[j_l].pt)
+                    continue
 
-    if len(points_3d_1_kept) < settings.min_points_pnp:
+    if len(points_3d_1_kept) < settings.min_inliers:
         return np.zeros((3,3)),0
     # Get the intrinsics matrix
     cam_mat_l, rotMatrix_l, transVect_l, rotMatrixX_l, rotMatrixY_l, rotMatrixZ_l, eulerAngles_l = cv2.decomposeProjectionMatrix(
@@ -188,10 +217,10 @@ def getEstTransform(img1_name,img2_name):
     # print(points_3d_1_kept_left_cor)
     # print(points_2d_2_kept)
     # Get the rotation and translation
-    
+    # print(points_3d_1_kept)
     val, rvec, tvec, inliers = cv2.solvePnPRansac(
         np.array(points_3d_1_kept_left_cor), np.array(points_2d_2_kept),
         cam_mat_l, None, None, None,
-        False, 50, 2.0, 0.99, None)
+        False, settings.iterations, settings.pnp_reproj_err, 0.99, settings.min_inliers, settings.pnp_flags)
     rot_mat, _ = cv2.Rodrigues(rvec)
     return rot_mat, tvec

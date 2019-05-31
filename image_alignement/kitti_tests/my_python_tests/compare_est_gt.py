@@ -22,6 +22,7 @@ def compare_est_gt(image_1_idx,image_2_idx,print_res=False):
     Rot_err = np.rad2deg(np.arccos((np.trace(R_est_gt) - 1) / 2))
 
     if print_res:
+        print('\nComparing images with ids '+str(image_1_idx)+' and '+str(image_2_idx))
         print('My estimate (left camera coordinate frame)')
         print(t_12_est.squeeze())
         print('My estimate (same frame as gt)')
@@ -31,5 +32,6 @@ def compare_est_gt(image_1_idx,image_2_idx,print_res=False):
         print('\n')
 
         print('Translation error:'+str(t_err)+'\n')
-        print(Rot_err)
+        print('Rotation error:'+str(Rot_err)+'\n')
+
     return Rot_err, t_err
