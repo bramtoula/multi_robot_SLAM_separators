@@ -167,7 +167,7 @@ def getEstTransform(img1_name,img2_name):
     matches12_l = getMatches(bf, kp1_l, desc1_l, kp2_l, desc2_l)
     matches12_r = getMatches(bf, kp1_r, desc1_r, kp2_r, desc2_r)
 
-    getMatchesImg(img1_l, kp1_l, img1_r, kp1_r, matches1_lr, mask=[])
+    # getMatchesImg(img1_l, kp1_l, img1_r, kp1_r, matches1_lr, mask=[])
 
 
 

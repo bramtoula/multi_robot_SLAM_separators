@@ -27,11 +27,13 @@ SET(INCLUDE_DIRS
    ${PCL_INCLUDE_DIRS}
 )
 
+SET(SOURCES src/main.cpp src/myRegistration.cpp src/myRegistrationVis.cpp)
+
 IF(QT4_FOUND)
    INCLUDE(${QT_USE_FILE})
 ENDIF(QT4_FOUND)
 
-INCLUDE_DIRECTORIES(${INCLUDE_DIRS})
+INCLUDE_DIRECTORIES(${INCLUDE_DIRS} include)
 
 # libraries
 SET(LIBRARIES

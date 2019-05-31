@@ -4,13 +4,15 @@
 #include "rtabmap/core/Transform.h"
 #include "rtabmap/core/SensorData.h"
 #include <opencv2/core/core.hpp>
-#include "rtabmap/core/Registration.h"
+#include "myRegistration.h"
 
 using namespace rtabmap;
 
 
 int main(int argc, char *argv[])
 {
+    ULogger::setType(ULogger::kTypeConsole);
+    ULogger::setLevel(ULogger::kDebug);
     FILE *pFile = 0;
     std::string pathCalib =  "calib.txt";
 
@@ -65,10 +67,10 @@ int main(int argc, char *argv[])
                             image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
                             cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
     // StereoCameraModel cam(718.856, 718.856, 607.1928, 185.2157, 0.54, Transform::getIdentity(), cv::Size(1241,376));
-    cv::Mat img_l_1 = cv::imread("left_0.png", CV_8UC1);
-    cv::Mat img_l_2 = cv::imread("left_5.png", CV_8UC1);
-    cv::Mat img_r_1 = cv::imread("right_0.png", CV_8UC1);
-    cv::Mat img_r_2 = cv::imread("right_5.png", CV_8UC1);
+    cv::Mat img_l_1 = cv::imread("image_2/000000.png", CV_8UC1);
+    cv::Mat img_l_2 = cv::imread("image_2/000005.png", CV_8UC1);
+    cv::Mat img_r_1 = cv::imread("image_3/000000.png", CV_8UC1);
+    cv::Mat img_r_2 = cv::imread("image_3/000005.png", CV_8UC1);
 
     SensorData frame1(img_l_1,img_r_1,cam);
     SensorData frame2(img_l_2, img_r_2, cam);
@@ -86,17 +88,21 @@ int main(int argc, char *argv[])
 
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisEstimationType(), "1"));
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPFlags(), "0"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPReprojError(), "1"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorFlowWinSize(), "15"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorType(), "1"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPReprojError(), "2"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorFlowWinSize(), "16"));
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorType(), "0"));
 
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kRegStrategy(), "0"));
 
     _registrationPipeline = Registration::create(params);
 
     RegistrationInfo info;
-    Transform res = _registrationPipeline->computeTransformation(frame1, frame2, Transform(), &info);
-    
+
+    // Transform guess(-0.2, -0.15, 4.3, 0, 0, 0);
+    Transform guess(0.0, 0.0, 0.0, 0, 0, 0);
+
+    Transform res = _registrationPipeline->computeTransformation(frame1, frame2, guess, &info);
+
     printf("%s\n", res.prettyPrint().c_str());
     return 0;
 }
