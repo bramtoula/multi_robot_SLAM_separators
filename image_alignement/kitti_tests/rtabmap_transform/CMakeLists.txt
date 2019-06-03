@@ -44,6 +44,6 @@ SET(LIBRARIES
 )
 
 
-ADD_EXECUTABLE(est_transform src/main.cpp ${moc_srcs})
+ADD_EXECUTABLE(est_transform src/main.cpp src/myRegistration.cpp src/myRegistrationVis.cpp ${moc_srcs})
 
 TARGET_LINK_LIBRARIES(est_transform ${LIBRARIES})

@@ -59,7 +59,17 @@ protected:
 			Signature & to,
 			Transform guess,
 			RegistrationInfo & info) const;
-
+	virtual void getFeaturesImpl(
+		std::vector<cv::Point3f> & kptsFrom3DOut,
+		std::vector<cv::Point3f> & kptsTo3DOut,
+		std::vector<cv::KeyPoint> & kptsFromOut,
+		std::vector<cv::KeyPoint> & kptsToOut,
+		cv::Mat & descriptorsFromOut,
+		cv::Mat & descriptorsToOut,
+		Signature & fromSignature,
+		Signature & toSignature,
+		Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+		RegistrationInfo & info) const;
 	virtual bool isImageRequiredImpl() const {return true;}
 	virtual bool canUseGuessImpl() const {return _correspondencesApproach != 0 || _guessWinSize>0;}
 	virtual int getMinVisualCorrespondencesImpl() const {return _minInliers;}

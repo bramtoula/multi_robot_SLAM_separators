@@ -80,6 +80,18 @@ public:
 			const SensorData & to,
 			Transform guess = Transform::getIdentity(),
 			RegistrationInfo * info = 0) const;
+	
+	void getFeatures(
+			std::vector<cv::Point3f> &kptsFrom3DOut,
+			std::vector<cv::Point3f> &kptsTo3DOut,
+			std::vector<cv::KeyPoint> &kptsFromOut,
+			std::vector<cv::KeyPoint> &kptsToOut,
+			cv::Mat &descriptorsFromOut,
+			cv::Mat &descriptorsToOut,
+			Signature &fromSignature,
+			Signature &toSignature,
+			Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+			RegistrationInfo * info = 0) const;
 
 	Transform computeTransformationMod(
 			Signature & from,
@@ -98,6 +110,18 @@ protected:
 			Signature & to,
 			Transform guess,
 			RegistrationInfo & info) const = 0;
+	virtual void getFeaturesImpl(
+			std::vector<cv::Point3f> &kptsFrom3DOut,
+			std::vector<cv::Point3f> &kptsTo3DOut,
+			std::vector<cv::KeyPoint> &kptsFromOut,
+			std::vector<cv::KeyPoint> &kptsToOut,
+			cv::Mat &descriptorsFromOut,
+			cv::Mat &descriptorsToOut,
+			Signature &fromSignature,
+			Signature &toSignature,
+			Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+			RegistrationInfo & info) const = 0;
+			
 
 	virtual bool isImageRequiredImpl() const {return false;}
 	virtual bool isScanRequiredImpl() const {return false;}
