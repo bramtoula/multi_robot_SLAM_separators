@@ -1,5 +1,4 @@
 #include "rtabmap/core/Rtabmap.h"
-//#include "rtabmap/core/CameraStereo.h"
 #include "rtabmap/core/StereoCameraModel.h"
 #include "rtabmap/core/Transform.h"
 #include "rtabmap/core/SensorData.h"
@@ -7,7 +6,6 @@
 #include "myRegistration.h"
 
 using namespace rtabmap;
-
 
 int main(int argc, char *argv[])
 {
@@ -60,19 +58,19 @@ int main(int argc, char *argv[])
     }
     fclose(pFile);
 
-    cv::Mat image = cv::imread("left_1.png");
+    cv::Mat image = cv::imread("../../image_2/000000.png");
 
     StereoCameraModel cam("stereo_calib",
-                            image.size(), P2.colRange(0, 3), cv::Mat(), cv::Mat(), P2,
-                            image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
-                            cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
+                          image.size(), P2.colRange(0, 3), cv::Mat(), cv::Mat(), P2,
+                          image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
+                          cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
     // StereoCameraModel cam(718.856, 718.856, 607.1928, 185.2157, 0.54, Transform::getIdentity(), cv::Size(1241,376));
     cv::Mat img_l_1 = cv::imread("../../image_2/000000.png", CV_8UC1);
-    cv::Mat img_l_2 = cv::imread("../../image_2/000005.png", CV_8UC1);
+    cv::Mat img_l_2 = cv::imread("../../image_2/000003.png", CV_8UC1);
     cv::Mat img_r_1 = cv::imread("../../image_3/000000.png", CV_8UC1);
-    cv::Mat img_r_2 = cv::imread("../../image_3/000005.png", CV_8UC1);
+    cv::Mat img_r_2 = cv::imread("../../image_3/000003.png", CV_8UC1);
 
-    SensorData frame1(img_l_1,img_r_1,cam);
+    SensorData frame1(img_l_1, img_r_1, cam);
     SensorData frame2(img_l_2, img_r_2, cam);
 
     ParametersMap params;
@@ -98,11 +96,36 @@ int main(int argc, char *argv[])
 
     RegistrationInfo info;
 
-    // Transform guess(-0.2, -0.15, 4.3, 0, 0, 0);
     Transform guess(0.0, 0.0, 0.0, 0, 0, 0);
 
-    Transform res = _registrationPipeline->computeTransformation(frame1, frame2, guess, &info);
+    std::vector<cv::KeyPoint> kptsFrom;
+    std::vector<cv::KeyPoint> kptsTo;
+    std::vector<cv::Point3f> kptsFrom3D;
+    std::vector<cv::Point3f> kptsTo3D;
+    cv::Mat descriptorsFrom;
+    cv::Mat descriptorsTo;
+    Signature frame1Sig(frame1);
+    Signature frame2Sig(frame2);
 
-    printf("%s\n", res.prettyPrint().c_str());
+    _registrationPipeline->getFeatures(kptsFrom3D, kptsTo3D, kptsFrom, kptsTo, descriptorsFrom, descriptorsTo, frame1Sig, frame2Sig, guess, &info);
+
+
+    Transform res = _registrationPipeline->computeTransformationFromFeats(
+			cam,
+			cam,
+			descriptorsFrom,
+			descriptorsTo,
+			image,
+			kptsFrom3D,
+			kptsTo3D,
+			kptsFrom,
+			kptsTo,
+			guess,
+			&info);
+
+    Transform res2 = _registrationPipeline->computeTransformation(frame1, frame2, guess, &info);
+
+    printf("Mine %s\n", res.prettyPrint().c_str());
+    printf("Original %s\n", res2.prettyPrint().c_str());
     return 0;
 }

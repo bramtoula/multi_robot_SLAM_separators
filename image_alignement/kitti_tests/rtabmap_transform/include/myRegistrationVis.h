@@ -54,6 +54,18 @@ public:
 	Feature2D * createFeatureDetector() const; // for convenience
 
 protected:
+	virtual Transform computeTransformationFromFeatsImpl(
+	StereoCameraModel stereoCameraModelTo,
+	StereoCameraModel stereoCameraModelFrom,
+	cv::Mat descriptorsFrom,
+	cv::Mat descriptorsTo,
+	cv::Mat imageTo,
+	std::vector<cv::Point3f> kptsFrom3D,
+	std::vector<cv::Point3f> kptsTo3D,
+	std::vector<cv::KeyPoint> kptsFrom,
+	std::vector<cv::KeyPoint> kptsTo,
+	Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+	RegistrationInfo &info) const;
 	virtual Transform computeTransformationImpl(
 			Signature & from,
 			Signature & to,

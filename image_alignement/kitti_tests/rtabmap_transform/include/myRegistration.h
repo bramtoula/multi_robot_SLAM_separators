@@ -70,6 +70,19 @@ public:
 	// take ownership!
 	void setChildRegistration(Registration * child);
 
+	Transform computeTransformationFromFeats(
+			StereoCameraModel stereoCameraModelTo,
+			StereoCameraModel stereoCameraModelFrom,
+			cv::Mat descriptorsFrom,
+			cv::Mat descriptorsTo,
+			cv::Mat imageTo,
+			std::vector<cv::Point3f> kptsFrom3D,
+			std::vector<cv::Point3f> kptsTo3D,
+			std::vector<cv::KeyPoint> kptsFrom,
+			std::vector<cv::KeyPoint> kptsTo,
+			Transform guess = Transform::getIdentity(),
+			RegistrationInfo * info = 0) const;
+
 	Transform computeTransformation(
 			const Signature & from,
 			const Signature & to,
@@ -93,6 +106,19 @@ public:
 			Transform guess, // (flowMaxLevel is set to 0 when guess is used)
 			RegistrationInfo * info = 0) const;
 
+	Transform computeTransformationModFromFeats(
+			StereoCameraModel stereoCameraModelTo,
+			StereoCameraModel stereoCameraModelFrom,
+			cv::Mat descriptorsFrom,
+			cv::Mat descriptorsTo,
+			cv::Mat imageTo,
+			std::vector<cv::Point3f> kptsFrom3D,
+			std::vector<cv::Point3f> kptsTo3D,
+			std::vector<cv::KeyPoint> kptsFrom,
+			std::vector<cv::KeyPoint> kptsTo,
+			Transform guess = Transform::getIdentity(), // (flowMaxLevel is set to 0 when guess is used)
+			RegistrationInfo * info = 0) const;
+
 	Transform computeTransformationMod(
 			Signature & from,
 			Signature & to,
@@ -105,6 +131,18 @@ protected:
 
 	// It is safe to modify the signatures in the implementation, if so, the
 	// child registration will use these modifications.
+	virtual Transform computeTransformationFromFeatsImpl(
+			StereoCameraModel stereoCameraModelTo,
+			StereoCameraModel stereoCameraModelFrom,
+			cv::Mat descriptorsFrom,
+			cv::Mat descriptorsTo,
+			cv::Mat imageTo,
+			std::vector<cv::Point3f> kptsFrom3D,
+			std::vector<cv::Point3f> kptsTo3D,
+			std::vector<cv::KeyPoint> kptsFrom,
+			std::vector<cv::KeyPoint> kptsTo,
+			Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+			RegistrationInfo &info) const = 0;
 	virtual Transform computeTransformationImpl(
 			Signature & from,
 			Signature & to,

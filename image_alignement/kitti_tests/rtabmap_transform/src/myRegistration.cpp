@@ -205,6 +205,113 @@ Transform Registration::computeTransformation(
 	return computeTransformationMod(fromCopy, toCopy, guess, infoOut);
 }
 
+
+Transform Registration::computeTransformationFromFeats(
+		StereoCameraModel stereoCameraModelTo,
+	StereoCameraModel stereoCameraModelFrom,
+	cv::Mat descriptorsFrom,
+	cv::Mat descriptorsTo,
+	cv::Mat imageTo,
+	std::vector<cv::Point3f> kptsFrom3D,
+	std::vector<cv::Point3f> kptsTo3D,
+	std::vector<cv::KeyPoint> kptsFrom,
+	std::vector<cv::KeyPoint> kptsTo,
+	Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+	RegistrationInfo *infoOut) const
+{
+	return computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, infoOut);
+}
+
+
+
+
+
+
+Transform Registration::computeTransformationModFromFeats(
+		StereoCameraModel stereoCameraModelTo,
+	StereoCameraModel stereoCameraModelFrom,
+	cv::Mat descriptorsFrom,
+	cv::Mat descriptorsTo,
+	cv::Mat imageTo,
+	std::vector<cv::Point3f> kptsFrom3D,
+	std::vector<cv::Point3f> kptsTo3D,
+	std::vector<cv::KeyPoint> kptsFrom,
+	std::vector<cv::KeyPoint> kptsTo,
+	Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+	RegistrationInfo *infoOut) const
+{
+	UTimer time;
+	RegistrationInfo info;
+	if (infoOut)
+	{
+		info = *infoOut;
+	}
+
+	if (!guess.isNull() && force3DoF_)
+	{
+		guess = guess.to3DoF();
+	}
+
+	Transform t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,guess, info);
+
+	if (child_)
+	{
+		if (!t.isNull())
+		{
+			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, force3DoF_ ? t.to3DoF() : t, &info);
+		}
+		else if (!guess.isNull())
+		{
+			UDEBUG("This registration approach failed, continue with the guess for the next registration");
+			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, &info);
+		}
+	}
+	else if (repeatOnce_ && guess.isNull() && !t.isNull() && this->canUseGuess())
+	{
+		// redo with guess to get a more accurate transform
+		t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,t, info);;
+
+		if (!t.isNull() && force3DoF_)
+		{
+			t = t.to3DoF();
+		}
+	}
+	else if (!t.isNull() && force3DoF_)
+	{
+		t = t.to3DoF();
+	}
+
+	if (info.covariance.empty())
+	{
+		info.covariance = cv::Mat::eye(6, 6, CV_64FC1);
+	}
+
+	if (info.covariance.at<double>(0, 0) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(0, 0) = COVARIANCE_EPSILON; // epsilon if exact transform
+	if (info.covariance.at<double>(1, 1) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(1, 1) = COVARIANCE_EPSILON; // epsilon if exact transform
+	if (info.covariance.at<double>(2, 2) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(2, 2) = COVARIANCE_EPSILON; // epsilon if exact transform
+	if (info.covariance.at<double>(3, 3) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(3, 3) = COVARIANCE_EPSILON; // epsilon if exact transform
+	if (info.covariance.at<double>(4, 4) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(4, 4) = COVARIANCE_EPSILON; // epsilon if exact transform
+	if (info.covariance.at<double>(5, 5) <= COVARIANCE_EPSILON)
+		info.covariance.at<double>(5, 5) = COVARIANCE_EPSILON; // epsilon if exact transform
+
+	if (infoOut)
+	{
+		*infoOut = info;
+		infoOut->totalTime = time.ticks();
+	}
+	return t;
+}
+
+
+
+
+
+
 Transform Registration::computeTransformationMod(
 		Signature &from,
 		Signature &to,
