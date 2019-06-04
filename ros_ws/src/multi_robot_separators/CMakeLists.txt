@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(multi_robot_SLAM_separators)
+project(multi_robot_separators)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  geometry_msgs
   message_generation
   rtabmap_ros
 )
@@ -52,14 +53,16 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   KeyPointVec.msg
+  KeyPoint3DVec.msg
+  Descriptors.msg
 )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
+add_service_files(
+  FILES
+  EstTransform.srv
 #   Service2.srv
-# )
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -72,6 +75,7 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  geometry_msgs
   rtabmap_ros
 )
 
@@ -106,8 +110,8 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES multi_robot_SLAM_separators
-  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime rtabmap_ros
+  LIBRARIES multi_robot_separators
+  CATKIN_DEPENDS roscpp rospy geometry_msgs std_msgs message_runtime rtabmap_ros
   DEPENDS system_lib
 )
 
@@ -124,7 +128,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/multi_robot_SLAM_separators.cpp
+#   src/${PROJECT_NAME}/multi_robot_separators.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -135,7 +139,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/multi_robot_SLAM_separators_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/multi_robot_separators_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -192,7 +196,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_multi_robot_SLAM_separators.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_multi_robot_separators.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

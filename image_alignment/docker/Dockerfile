@@ -5,5 +5,6 @@ RUN apt-get update && apt-get install -y libopenni2-dev \
 
 WORKDIR /root/
 
+ARG counter0
 # Clone my repo
-RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git
+RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
