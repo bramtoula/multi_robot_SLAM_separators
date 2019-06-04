@@ -16,6 +16,27 @@ find_package(catkin REQUIRED COMPONENTS
   rtabmap_ros
 )
 
+
+FIND_PACKAGE(RTABMap REQUIRED)
+FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(PCL 1.7 REQUIRED)
+
+# Find Qt5 first
+FIND_PACKAGE(Qt5 COMPONENTS Widgets Core Gui Svg QUIET)
+IF(NOT Qt5_FOUND)
+  FIND_PACKAGE(Qt4 COMPONENTS QtCore QtGui QtSvg)
+ENDIF(NOT Qt5_FOUND)
+
+# fix libproj.so not found on Xenial
+if(NOT "${PCL_LIBRARIES}" STREQUAL "")
+  list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+endif()
+
+if(POLICY CMP0020)
+  cmake_policy(SET CMP0020 OLD)
+endif()
+
+
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
@@ -123,7 +144,11 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
+  ${RTABMap_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
+  ${PCL_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 ## Declare a C++ library
@@ -155,6 +180,15 @@ include_directories(
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+
+add_executable(est_transform_client src/estTransformCall.cpp)
+target_link_libraries(est_transform_client ${catkin_LIBRARIES})
+add_dependencies(est_transform_client multi_robot_separators_gencpp)
+
+add_executable(est_transform_server src/estTransform.cpp src/myRegistration.cpp src/myRegistrationVis.cpp)
+target_link_libraries(est_transform_server ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(est_transform_server multi_robot_separators_gencpp)
+
 
 #############
 ## Install ##
