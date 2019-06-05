@@ -10,6 +10,7 @@
 
 using namespace rtabmap;
 
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "estimate_transform_client");
@@ -136,6 +137,10 @@ int main(int argc, char **argv)
     if (client.call(srv))
     {
         ROS_INFO("Answered\n");
+        rtabmap::Transform result = transformFromPoseMsg(srv.response.poseWithCov.pose);
+        cv::Mat covariance = covFromFloat64Msg(srv.response.poseWithCov.covariance);
+        printf("Mine %s\n", result.prettyPrint().c_str());
+        // _PrintMatrix("Covariance", covariance);
     }
     else
     {

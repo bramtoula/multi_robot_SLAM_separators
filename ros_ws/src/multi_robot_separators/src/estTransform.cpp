@@ -10,59 +10,6 @@
 
 using namespace rtabmap;
 
-void _PrintMatrix(char *pMessage, cv::Mat &mat)
-{
-    printf("%s\n", pMessage);
-
-    for (int r = 0; r < mat.rows; r++)
-    {
-        for (int c = 0; c < mat.cols; c++)
-        {
-
-            switch (mat.depth())
-            {
-            case CV_8U:
-            {
-                printf("%*u ", 3, mat.at<uchar>(r, c));
-                break;
-            }
-            case CV_8S:
-            {
-                printf("%*hhd ", 4, mat.at<schar>(r, c));
-                break;
-            }
-            case CV_16U:
-            {
-                printf("%*hu ", 5, mat.at<ushort>(r, c));
-                break;
-            }
-            case CV_16S:
-            {
-                printf("%*hd ", 6, mat.at<short>(r, c));
-                break;
-            }
-            case CV_32S:
-            {
-                printf("%*d ", 6, mat.at<int>(r, c));
-                break;
-            }
-            case CV_32F:
-            {
-                printf("%*.4f ", 10, mat.at<float>(r, c));
-                break;
-            }
-            case CV_64F:
-            {
-                printf("%*.4f ", 10, mat.at<double>(r, c));
-                break;
-            }
-            }
-        }
-        printf("\n");
-    }
-    printf("\n");
-}
-
 bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
                             multi_robot_separators::EstTransform::Response &res)
 {
@@ -201,6 +148,9 @@ bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
     printf("Mine %s\n", result2.prettyPrint().c_str());
     // _PrintMatrix("Covariance", info.covariance);
     // _PrintMatrix("Covariance",descriptorsFrom);
+
+    covToFloat64Msg(info.covariance, res.poseWithCov.covariance);
+    transformToPoseMsg(result2, res.poseWithCov.pose);
     return true;
 }
 

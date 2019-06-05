@@ -5,4 +5,4 @@ KeyPoint3DVec kptsTo3D
 KeyPointVec kptsFrom
 KeyPointVec kptsTo
 ---
-geometry_msgs/Transform estTransform
+geometry_msgs/PoseWithCovariance poseWithCov

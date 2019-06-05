@@ -1,6 +1,7 @@
 #include <tf/tf.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
+#include <geometry_msgs/PoseWithCovariance.h>
 #include <geometry_msgs/Pose.h>
+#include <std_msgs/Float64.h>
 #include <multi_robot_separators/Descriptors.h>
 #include <multi_robot_separators/KeyPoint3DVec.h>
 #include <multi_robot_separators/KeyPointVec.h>
@@ -17,6 +18,9 @@ void keypoints3DToROS(const std::vector<cv::Point3f> &kpts, multi_robot_separato
 
 std::vector<cv::KeyPoint> keypointsFromROS(const multi_robot_separators::KeyPointVec &msg);
 void keypointsToROS(const std::vector<cv::KeyPoint> &kpts, multi_robot_separators::KeyPointVec &msg);
+
+void covToFloat64Msg(const cv::Mat &covariance, boost::array<double, 36ul> &msg);
+cv::Mat covFromFloat64Msg(const boost::array<double, 36ul> &msg);
 
 void transformToPoseMsg(const rtabmap::Transform &transform, geometry_msgs::Pose &msg);
 rtabmap::Transform transformFromPoseMsg(const geometry_msgs::Pose &msg);

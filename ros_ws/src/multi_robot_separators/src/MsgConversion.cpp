@@ -57,6 +57,16 @@ void keypointsToROS(const std::vector<cv::KeyPoint> &kpts, multi_robot_separator
     }
 }
 
+void covToFloat64Msg(const cv::Mat &covariance, boost::array<double, 36ul> &msg)
+{
+    memcpy(&msg, covariance.data, 36 * 8);
+}
+
+cv::Mat covFromFloat64Msg(const boost::array<double, 36ul> &msg)
+{
+    return cv::Mat(6,6, CV_64F, const_cast<double *>(&msg[0]));
+}
+
 void transformToPoseMsg(const rtabmap::Transform &transform, geometry_msgs::Pose &msg)
 {
     if (!transform.isNull())

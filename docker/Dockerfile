@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y libopenni2-dev wget vim\
 
 WORKDIR /root/
 
-ARG counter0
+ARG counter1
 # Clone my repo
 RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
