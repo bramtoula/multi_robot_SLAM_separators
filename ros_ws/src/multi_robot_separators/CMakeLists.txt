@@ -14,6 +14,10 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   message_generation
   rtabmap_ros
+  tf 
+  tf_conversions 
+  tf2_ros 
+  eigen_conversions
 )
 
 
@@ -132,7 +136,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES multi_robot_separators
-  CATKIN_DEPENDS roscpp rospy geometry_msgs std_msgs message_runtime rtabmap_ros
+  CATKIN_DEPENDS roscpp rospy geometry_msgs std_msgs message_runtime rtabmap_ros tf tf_conversions tf2_ros eigen_conversions
   DEPENDS system_lib
 )
 
@@ -152,9 +156,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/multi_robot_separators.cpp
-# )
+#add_library(${PROJECT_NAME}
+#  src/MsgConversion.cpp
+#)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -181,11 +185,11 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(est_transform_client src/estTransformCall.cpp)
-target_link_libraries(est_transform_client ${catkin_LIBRARIES})
+add_executable(est_transform_client src/estTransformCall.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
+target_link_libraries(est_transform_client ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(est_transform_client multi_robot_separators_gencpp)
 
-add_executable(est_transform_server src/estTransform.cpp src/myRegistration.cpp src/myRegistrationVis.cpp)
+add_executable(est_transform_server src/estTransform.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
 target_link_libraries(est_transform_server ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(est_transform_server multi_robot_separators_gencpp)
 

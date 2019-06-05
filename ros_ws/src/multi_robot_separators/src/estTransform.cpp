@@ -6,11 +6,65 @@
 #include "rtabmap/core/SensorData.h"
 #include <opencv2/core/core.hpp>
 #include "multi_robot_separators/myRegistration.h"
+#include "multi_robot_separators/MsgConversion.h"
 
 using namespace rtabmap;
 
+void _PrintMatrix(char *pMessage, cv::Mat &mat)
+{
+    printf("%s\n", pMessage);
+
+    for (int r = 0; r < mat.rows; r++)
+    {
+        for (int c = 0; c < mat.cols; c++)
+        {
+
+            switch (mat.depth())
+            {
+            case CV_8U:
+            {
+                printf("%*u ", 3, mat.at<uchar>(r, c));
+                break;
+            }
+            case CV_8S:
+            {
+                printf("%*hhd ", 4, mat.at<schar>(r, c));
+                break;
+            }
+            case CV_16U:
+            {
+                printf("%*hu ", 5, mat.at<ushort>(r, c));
+                break;
+            }
+            case CV_16S:
+            {
+                printf("%*hd ", 6, mat.at<short>(r, c));
+                break;
+            }
+            case CV_32S:
+            {
+                printf("%*d ", 6, mat.at<int>(r, c));
+                break;
+            }
+            case CV_32F:
+            {
+                printf("%*.4f ", 10, mat.at<float>(r, c));
+                break;
+            }
+            case CV_64F:
+            {
+                printf("%*.4f ", 10, mat.at<double>(r, c));
+                break;
+            }
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
 bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
-         multi_robot_separators::EstTransform::Response &res)
+                            multi_robot_separators::EstTransform::Response &res)
 {
 
     ULogger::setType(ULogger::kTypeConsole);
@@ -108,11 +162,17 @@ bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
     std::vector<cv::Point3f> kptsTo3D;
     cv::Mat descriptorsFrom;
     cv::Mat descriptorsTo;
-    Signature frame1Sig(frame1);
-    Signature frame2Sig(frame2);
 
-    _registrationPipeline->getFeatures(kptsFrom3D, kptsTo3D, kptsFrom, kptsTo, descriptorsFrom, descriptorsTo, frame1Sig, frame2Sig, guess, &info);
+    kptsFrom3D = keypoints3DFromROS(req.kptsFrom3D);
+    kptsTo3D = keypoints3DFromROS(req.kptsTo3D);
+    kptsFrom = keypointsFromROS(req.kptsFrom);
+    kptsTo = keypointsFromROS(req.kptsTo);
+    descriptorsFrom = descriptorsFromROS(req.descriptorsFrom);
+    descriptorsTo = descriptorsFromROS(req.descriptorsTo);
+    // Signature frame1Sig(frame1);
+    // Signature frame2Sig(frame2);
 
+    // _registrationPipeline->getFeatures(kptsFrom3D, kptsTo3D, kptsFrom, kptsTo, descriptorsFrom, descriptorsTo, frame1Sig, frame2Sig, guess, &info);
     Transform result = _registrationPipeline->computeTransformationFromFeats(
         cam,
         cam,
@@ -125,9 +185,22 @@ bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
         kptsTo,
         guess,
         &info);
+    Transform result2 = _registrationPipeline->computeTransformationFromFeats(
+        cam,
+        cam,
+        descriptorsFrom,
+        descriptorsTo,
+        image,
+        kptsFrom3D,
+        kptsTo3D,
+        kptsFrom,
+        kptsTo,
+        result,
+        &info);
 
-    printf("Mine %s\n", result.prettyPrint().c_str());
-    ROS_INFO("Here\n");
+    printf("Mine %s\n", result2.prettyPrint().c_str());
+    // _PrintMatrix("Covariance", info.covariance);
+    // _PrintMatrix("Covariance",descriptorsFrom);
     return true;
 }
 
