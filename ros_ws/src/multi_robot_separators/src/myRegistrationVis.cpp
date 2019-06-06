@@ -189,14 +189,9 @@ Feature2D * RegistrationVis::createFeatureDetector() const
 
 void RegistrationVis::getFeaturesImpl(
 		std::vector<cv::Point3f> &kptsFrom3DOut,
-		std::vector<cv::Point3f> &kptsTo3DOut,
 		std::vector<cv::KeyPoint> &kptsFromOut,
-		std::vector<cv::KeyPoint> &kptsToOut,
 		cv::Mat &descriptorsFromOut,
-		cv::Mat &descriptorsToOut,
 		Signature &fromSignature,
-		Signature &toSignature,
-		Transform guess, // (flowMaxLevel is set to 0 when guess is used)
 		RegistrationInfo &info) const
 {
 	UDEBUG("%s=%d", Parameters::kVisMinInliers().c_str(), _minInliers);
@@ -212,9 +207,8 @@ void RegistrationVis::getFeaturesImpl(
 	UDEBUG("%s=%d", Parameters::kVisCorFlowIterations().c_str(), _flowIterations);
 	UDEBUG("%s=%f", Parameters::kVisCorFlowEps().c_str(), _flowEps);
 	UDEBUG("%s=%d", Parameters::kVisCorFlowMaxLevel().c_str(), _flowMaxLevel);
-	UDEBUG("guess=%s", guess.prettyPrint().c_str());
 
-	UDEBUG("Input(%d): from=%d words, %d 3D words, %d words descriptors,  %d kpts, %d kpts3D, %d descriptors, image=%dx%d",
+	UDEBUG("Input(%d): %d words, %d 3D words, %d words descriptors,  %d kpts, %d kpts3D, %d descriptors, image=%dx%d",
 				 fromSignature.id(),
 				 (int)fromSignature.getWords().size(),
 				 (int)fromSignature.getWords3().size(),
@@ -225,17 +219,6 @@ void RegistrationVis::getFeaturesImpl(
 				 fromSignature.sensorData().imageRaw().cols,
 				 fromSignature.sensorData().imageRaw().rows);
 
-	UDEBUG("Input(%d): to=%d words, %d 3D words, %d words descriptors, %d kpts, %d kpts3D, %d descriptors, image=%dx%d",
-				 toSignature.id(),
-				 (int)toSignature.getWords().size(),
-				 (int)toSignature.getWords3().size(),
-				 (int)toSignature.getWordsDescriptors().size(),
-				 (int)toSignature.sensorData().keypoints().size(),
-				 (int)toSignature.sensorData().keypoints3D().size(),
-				 toSignature.sensorData().descriptors().rows,
-				 toSignature.sensorData().imageRaw().cols,
-				 toSignature.sensorData().imageRaw().rows);
-
 	std::string msg;
 	info.projectedIDs.clear();
 
@@ -243,11 +226,11 @@ void RegistrationVis::getFeaturesImpl(
 	// Find correspondences
 	////////////////////
 	//recompute correspondences if descriptors are provided
-	if ((fromSignature.getWordsDescriptors().empty() && toSignature.getWordsDescriptors().empty()) &&
-			(_estimationType < 2 || fromSignature.getWords().size()) && // required only for 2D->2D
-			(_estimationType == 0 || toSignature.getWords().size()) &&	// required only for 3D->2D or 2D->2D
-			fromSignature.getWords3().size() &&													// required in all estimation approaches
-			(_estimationType == 1 || toSignature.getWords3().size()))		// required only for 3D->3D and 2D->2D
+	if (fromSignature.getWordsDescriptors().empty() &&
+			(_estimationType < 2) &&						// required only for 2D->2D
+			(_estimationType == 0) &&						// required only for 3D->2D or 2D->2D
+			fromSignature.getWords3().size() && // required in all estimation approaches
+			(_estimationType == 1))							// required only for 3D->3D and 2D->2D
 	{
 		// no need to extract new features, we have all the data we need
 		UDEBUG("Bypassing feature matching as descriptors and images are empty. We assume features are already matched.");
@@ -263,24 +246,13 @@ void RegistrationVis::getFeaturesImpl(
 						fromSignature.getWords().size() == fromSignature.getWordsDescriptors().size() ||
 						fromSignature.sensorData().descriptors().rows == 0 ||
 						fromSignature.getWordsDescriptors().size() == 0);
-		UASSERT((toSignature.getWords().empty() && toSignature.getWords3().empty()) ||
-						(toSignature.getWords().size() && toSignature.getWords3().empty()) ||
-						(toSignature.getWords().size() == toSignature.getWords3().size()));
-		UASSERT((int)toSignature.sensorData().keypoints().size() == toSignature.sensorData().descriptors().rows ||
-						toSignature.getWords().size() == toSignature.getWordsDescriptors().size() ||
-						toSignature.sensorData().descriptors().rows == 0 ||
-						toSignature.getWordsDescriptors().size() == 0);
 		UASSERT(fromSignature.sensorData().imageRaw().empty() ||
 						fromSignature.sensorData().imageRaw().type() == CV_8UC1 ||
 						fromSignature.sensorData().imageRaw().type() == CV_8UC3);
-		UASSERT(toSignature.sensorData().imageRaw().empty() ||
-						toSignature.sensorData().imageRaw().type() == CV_8UC1 ||
-						toSignature.sensorData().imageRaw().type() == CV_8UC3);
 
 		Feature2D *detector = createFeatureDetector();
 		std::vector<cv::KeyPoint> kptsFrom;
 		cv::Mat imageFrom = fromSignature.sensorData().imageRaw();
-		cv::Mat imageTo = toSignature.sensorData().imageRaw();
 
 		std::vector<int> orignalWordsFromIds;
 		if (fromSignature.getWords().empty())
@@ -341,54 +313,14 @@ void RegistrationVis::getFeaturesImpl(
 		}
 
 		std::multimap<int, cv::KeyPoint> wordsFrom;
-		std::multimap<int, cv::KeyPoint> wordsTo;
 		std::multimap<int, cv::Point3f> words3From;
-		std::multimap<int, cv::Point3f> words3To;
 
 		if (_correspondencesApproach == 0) // Features Matching
 		{
 			UDEBUG("");
-			std::vector<cv::KeyPoint> kptsTo;
-			if (toSignature.getWords().empty())
-			{
-				if (toSignature.sensorData().keypoints().empty() &&
-						!imageTo.empty())
-				{
-					if (imageTo.channels() > 1)
-					{
-						cv::Mat tmp;
-						cv::cvtColor(imageTo, tmp, cv::COLOR_BGR2GRAY);
-						imageTo = tmp;
-					}
-
-					cv::Mat depthMask;
-					if (!toSignature.sensorData().depthRaw().empty() && _depthAsMask)
-					{
-						if (imageTo.rows % toSignature.sensorData().depthRaw().rows == 0 &&
-								imageTo.cols % toSignature.sensorData().depthRaw().cols == 0 &&
-								imageTo.rows / toSignature.sensorData().depthRaw().rows == imageTo.cols / toSignature.sensorData().depthRaw().cols)
-						{
-							depthMask = util2d::interpolate(toSignature.sensorData().depthRaw(), imageTo.rows / toSignature.sensorData().depthRaw().rows, 0.1f);
-						}
-					}
-
-					kptsTo = detector->generateKeypoints(
-							imageTo,
-							depthMask);
-				}
-				else
-				{
-					kptsTo = toSignature.sensorData().keypoints();
-				}
-			}
-			else
-			{
-				kptsTo = uValues(toSignature.getWords());
-			}
 
 			// extract descriptors
 			UDEBUG("kptsFrom=%d", (int)kptsFrom.size());
-			UDEBUG("kptsTo=%d", (int)kptsTo.size());
 			cv::Mat descriptorsFrom;
 			if (fromSignature.getWordsDescriptors().size() &&
 					((kptsFrom.empty() && fromSignature.getWordsDescriptors().size()) ||
@@ -421,42 +353,8 @@ void RegistrationVis::getFeaturesImpl(
 				descriptorsFrom = detector->generateDescriptors(imageFrom, kptsFrom);
 			}
 
-			cv::Mat descriptorsTo;
-			if (kptsTo.size())
-			{
-				if (toSignature.getWordsDescriptors().size() == kptsTo.size())
-				{
-					descriptorsTo = cv::Mat(toSignature.getWordsDescriptors().size(),
-																	toSignature.getWordsDescriptors().begin()->second.cols,
-																	toSignature.getWordsDescriptors().begin()->second.type());
-					int i = 0;
-					for (std::multimap<int, cv::Mat>::const_iterator iter = toSignature.getWordsDescriptors().begin();
-							 iter != toSignature.getWordsDescriptors().end();
-							 ++iter, ++i)
-					{
-						iter->second.copyTo(descriptorsTo.row(i));
-					}
-				}
-				else if (toSignature.sensorData().descriptors().rows == (int)kptsTo.size())
-				{
-					descriptorsTo = toSignature.sensorData().descriptors();
-				}
-				else if (!imageTo.empty())
-				{
-					if (imageTo.channels() > 1)
-					{
-						cv::Mat tmp;
-						cv::cvtColor(imageTo, tmp, cv::COLOR_BGR2GRAY);
-						imageTo = tmp;
-					}
-
-					descriptorsTo = detector->generateDescriptors(imageTo, kptsTo);
-				}
-			}
-
 			// create 3D keypoints
 			std::vector<cv::Point3f> kptsFrom3D;
-			std::vector<cv::Point3f> kptsTo3D;
 			if (kptsFrom.size() == fromSignature.getWords3().size())
 			{
 				kptsFrom3D = uValues(fromSignature.getWords3());
@@ -527,86 +425,18 @@ void RegistrationVis::getFeaturesImpl(
 				}
 			}
 
-			if (kptsTo.size() == toSignature.getWords3().size())
-			{
-				kptsTo3D = uValues(toSignature.getWords3());
-			}
-			else if (kptsTo.size() == toSignature.sensorData().keypoints3D().size())
-			{
-				kptsTo3D = toSignature.sensorData().keypoints3D();
-			}
-			else
-			{
-				if (toSignature.getWords3().size() && kptsTo.size() != toSignature.getWords3().size())
-				{
-					UWARN("kptsTo (%d) is not the same size as toSignature.getWords3() (%d), there "
-								"is maybe a problem with the logic above (getWords3() should be null or equal to kptsTo). Regenerating kptsTo3D...",
-								(int)kptsTo.size(),
-								(int)toSignature.getWords3().size());
-				}
-				else if (toSignature.sensorData().keypoints3D().size() && kptsTo.size() != toSignature.sensorData().keypoints3D().size())
-				{
-					UWARN("kptsTo (%d) is not the same size as toSignature.sensorData().keypoints3D() (%d), there "
-								"is maybe a problem with the logic above (keypoints3D() should be null or equal to kptsTo). Regenerating kptsTo3D...",
-								(int)kptsTo.size(),
-								(int)toSignature.sensorData().keypoints3D().size());
-				}
-				kptsTo3D = detector->generateKeypoints3D(toSignature.sensorData(), kptsTo);
-				if (kptsTo3D.size() && (detector->getMinDepth() > 0.0f || detector->getMaxDepth() > 0.0f))
-				{
-					UDEBUG("");
-					//remove all keypoints/descriptors with no valid 3D points
-					UASSERT((int)kptsTo.size() == descriptorsTo.rows &&
-									kptsTo3D.size() == kptsTo.size());
-					std::vector<cv::KeyPoint> validKeypoints(kptsTo.size());
-					std::vector<cv::Point3f> validKeypoints3D(kptsTo.size());
-					cv::Mat validDescriptors(descriptorsTo.size(), descriptorsTo.type());
-
-					int oi = 0;
-					for (unsigned int i = 0; i < kptsTo3D.size(); ++i)
-					{
-						if (util3d::isFinite(kptsTo3D[i]))
-						{
-							validKeypoints[oi] = kptsTo[i];
-							validKeypoints3D[oi] = kptsTo3D[i];
-							descriptorsTo.row(i).copyTo(validDescriptors.row(oi));
-							++oi;
-						}
-					}
-					UDEBUG("Removed %d invalid 3D points", (int)kptsTo3D.size() - oi);
-					validKeypoints.resize(oi);
-					validKeypoints3D.resize(oi);
-					kptsTo = validKeypoints;
-					kptsTo3D = validKeypoints3D;
-					descriptorsTo = validDescriptors.rowRange(0, oi).clone();
-				}
-			}
-
 			UASSERT(kptsFrom.empty() || descriptorsFrom.rows == 0 || int(kptsFrom.size()) == descriptorsFrom.rows);
 
 			fromSignature.sensorData().setFeatures(kptsFrom, kptsFrom3D, descriptorsFrom);
-			toSignature.sensorData().setFeatures(kptsTo, kptsTo3D, descriptorsTo);
 
 			kptsFromOut = kptsFrom;
-			kptsToOut = kptsTo;
 			kptsFrom3DOut = kptsFrom3D;
-			kptsTo3DOut = kptsTo3D;
-			descriptorsToOut = descriptorsTo;
 			descriptorsFromOut = descriptorsFrom;
 			UDEBUG("descriptorsFrom=%d", descriptorsFrom.rows);
-			UDEBUG("descriptorsTo=%d", descriptorsTo.rows);
 		}
 		delete detector;
 	}
 }
-
-
-
-
-
-
-
-
 
 Transform RegistrationVis::computeTransformationFromFeatsImpl(
 	StereoCameraModel stereoCameraModelTo,

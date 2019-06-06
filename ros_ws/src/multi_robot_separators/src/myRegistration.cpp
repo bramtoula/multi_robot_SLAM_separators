@@ -164,14 +164,9 @@ void Registration::setChildRegistration(Registration *child)
 
 void Registration::getFeatures(
 		std::vector<cv::Point3f> &kptsFrom3DOut,
-		std::vector<cv::Point3f> &kptsTo3DOut,
 		std::vector<cv::KeyPoint> &kptsFromOut,
-		std::vector<cv::KeyPoint> &kptsToOut,
 		cv::Mat &descriptorsFromOut,
-		cv::Mat &descriptorsToOut,
 		Signature &fromSignature,
-		Signature &toSignature,
-		Transform guess, // (flowMaxLevel is set to 0 when guess is used)
 		RegistrationInfo *infoOut) const
 {
 		RegistrationInfo info;
@@ -180,7 +175,7 @@ void Registration::getFeatures(
 		info = *infoOut;
 	}
 
-	getFeaturesImpl(kptsFrom3DOut, kptsTo3DOut, kptsFromOut, kptsToOut, descriptorsFromOut, descriptorsToOut, fromSignature, toSignature, guess, info);
+	getFeaturesImpl(kptsFrom3DOut, kptsFromOut, descriptorsFromOut, fromSignature, info);
 }
 
 Transform Registration::computeTransformation(

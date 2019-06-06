@@ -122,7 +122,8 @@ int main(int argc, char **argv)
     Signature frame1Sig(frame1);
     Signature frame2Sig(frame2);
 
-    _registrationPipeline->getFeatures(kptsFrom3D, kptsTo3D, kptsFrom, kptsTo, descriptorsFrom, descriptorsTo, frame1Sig, frame2Sig, guess, &info);
+    _registrationPipeline->getFeatures(kptsFrom3D,kptsFrom, descriptorsFrom, frame1Sig, &info);
+    _registrationPipeline->getFeatures(kptsTo3D,kptsTo, descriptorsTo, frame2Sig, &info);
 
     keypoints3DToROS(kptsFrom3D, srv.request.kptsFrom3D);
     keypoints3DToROS(kptsTo3D, srv.request.kptsTo3D);
