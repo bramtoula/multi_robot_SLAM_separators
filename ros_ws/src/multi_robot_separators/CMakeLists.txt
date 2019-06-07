@@ -18,6 +18,9 @@ find_package(catkin REQUIRED COMPONENTS
   tf_conversions 
   tf2_ros 
   eigen_conversions
+  cv_bridge
+  image_transport
+  sensor_msgs
 )
 
 
@@ -86,6 +89,7 @@ add_message_files(
 add_service_files(
   FILES
   EstTransform.srv
+  GetFeatsAndDesc.srv
 #   Service2.srv
 )
 
@@ -102,6 +106,7 @@ generate_messages(
   std_msgs
   geometry_msgs
   rtabmap_ros
+  sensor_msgs
 )
 
 ################################################
@@ -136,7 +141,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES multi_robot_separators
-  CATKIN_DEPENDS roscpp rospy geometry_msgs std_msgs message_runtime rtabmap_ros tf tf_conversions tf2_ros eigen_conversions
+  CATKIN_DEPENDS roscpp rospy geometry_msgs std_msgs message_runtime rtabmap_ros tf tf_conversions tf2_ros eigen_conversions cv_bridge image_transport sensor_msgs
   DEPENDS system_lib
 )
 
@@ -194,6 +199,10 @@ target_link_libraries(est_transform_server ${catkin_LIBRARIES} ${RTABMap_LIBRARI
 add_dependencies(est_transform_server multi_robot_separators_gencpp)
 
 
+add_executable(get_feats_and_desc_server src/getFeatsAndDesc.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
+target_link_libraries(get_feats_and_desc_server ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(get_feats_and_desc_server multi_robot_separators_gencpp)
+
 #############
 ## Install ##
 #############
@@ -241,3 +250,4 @@ add_dependencies(est_transform_server multi_robot_separators_gencpp)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+

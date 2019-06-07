@@ -1,0 +1,6 @@
+sensor_msgs/Image image_left
+sensor_msgs/Image image_right
+---
+Descriptors descriptors
+KeyPoint3DVec kpts3D
+KeyPointVec kpts
