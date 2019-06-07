@@ -2,60 +2,14 @@
 
 using namespace rtabmap;
 
-StereoCamGeometricTools::StereoCamGeometricTools(/* args */)
+StereoCamGeometricTools::StereoCamGeometricTools(const cv::Mat &P_l, const cv::Mat &P_r, const cv::Size imageSize)
 {
-    ROS_INFO("In constructor");
     ULogger::setType(ULogger::kTypeConsole);
     ULogger::setLevel(ULogger::kDebug);
-    FILE *pFile = 0;
-    std::string pathCalib = "/kitti_data_orig/calib.txt";
-    pFile = fopen(pathCalib.c_str(), "r");
-    if (!pFile)
-    {
-        UERROR("Cannot open calibration file \"%s\"", pathCalib.c_str());
-    }
-
-    cv::Mat_<double> P0(3, 4);
-    cv::Mat_<double> P1(3, 4);
-    cv::Mat_<double> P2(3, 4);
-    cv::Mat_<double> P3(3, 4);
-
-    if (fscanf(pFile, "%*s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-               &P0(0, 0), &P0(0, 1), &P0(0, 2), &P0(0, 3),
-               &P0(1, 0), &P0(1, 1), &P0(1, 2), &P0(1, 3),
-               &P0(2, 0), &P0(2, 1), &P0(2, 2), &P0(2, 3)) != 12)
-    {
-        UERROR("Failed to parse calibration file \"%s\"", pathCalib.c_str());
-    }
-    if (fscanf(pFile, "%*s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-               &P1(0, 0), &P1(0, 1), &P1(0, 2), &P1(0, 3),
-               &P1(1, 0), &P1(1, 1), &P1(1, 2), &P1(1, 3),
-               &P1(2, 0), &P1(2, 1), &P1(2, 2), &P1(2, 3)) != 12)
-    {
-        UERROR("Failed to parse calibration file \"%s\"", pathCalib.c_str());
-    }
-    if (fscanf(pFile, "%*s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-               &P2(0, 0), &P2(0, 1), &P2(0, 2), &P2(0, 3),
-               &P2(1, 0), &P2(1, 1), &P2(1, 2), &P2(1, 3),
-               &P2(2, 0), &P2(2, 1), &P2(2, 2), &P2(2, 3)) != 12)
-    {
-        UERROR("Failed to parse calibration file \"%s\"", pathCalib.c_str());
-    }
-    if (fscanf(pFile, "%*s %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf",
-               &P3(0, 0), &P3(0, 1), &P3(0, 2), &P3(0, 3),
-               &P3(1, 0), &P3(1, 1), &P3(1, 2), &P3(1, 3),
-               &P3(2, 0), &P3(2, 1), &P3(2, 2), &P3(2, 3)) != 12)
-    {
-        UERROR("Failed to parse calibration file \"%s\"", pathCalib.c_str());
-    }
-
-    fclose(pFile);
-
-    cv::Mat image = cv::imread("kitti_data_orig/image_2/000000.png");
-    imageSize = image.size();
+    
     cam = StereoCameraModel("stereo_calib",
-                            image.size(), P2.colRange(0, 3), cv::Mat(), cv::Mat(), P2,
-                            image.size(), P3.colRange(0, 3), cv::Mat(), cv::Mat(), P3,
+                            imageSize, P_l.colRange(0, 3), cv::Mat(), cv::Mat(), P_l,
+                            imageSize, P_r.colRange(0, 3), cv::Mat(), cv::Mat(), P_r,
                             cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
     ParametersMap params;
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpCorrespondenceRatio(), "0.1"));
@@ -154,7 +108,59 @@ int main(int argc, char **argv)
 {
     ros::init(argc, argv, "stereo_cam_geometric_tools_node");
     ros::NodeHandle n;
-    StereoCamGeometricTools stereoCamGeometricToolsNode = StereoCamGeometricTools();
+
+    // Get params
+    std::vector<double> P_l_param;
+    std::vector<double> P_r_param;
+    int img_height, img_width;
+    if (!n.getParam("/image_size/height", img_height))
+    {
+        ROS_ERROR_STREAM("Height could not be read.");
+        return 0;
+    }
+    if (!n.getParam("/image_size/width", img_width))
+    {
+        ROS_ERROR_STREAM("Width could not be read.");
+        return 0;
+    }
+    if (!n.getParam("/P_l", P_l_param))
+    {
+        ROS_ERROR_STREAM("Left projection matrix could not be read.");
+        return 0;
+    }
+
+    if (!n.getParam("/P_r", P_r_param))
+    {
+        ROS_ERROR_STREAM("Right projection matrix could not be read.");
+        return 0;
+    }
+    cv::Mat P_l ;
+    if (P_l_param.size() == 12) // check that the rows and cols match the size of your vector
+    {
+        P_l = cv::Mat(P_l_param);
+        P_l = P_l.reshape(1,3);
+    }
+    else
+    {
+        ROS_ERROR_STREAM("Wrong dimensions of the left calibration matrix");
+        return 0;
+    }
+
+    cv::Mat P_r ;
+    if (P_r_param.size() == 12)
+    {
+        P_r = cv::Mat(P_r_param);
+        P_r = P_r.reshape(1, 3);
+    }
+    else
+    {
+        ROS_ERROR_STREAM("Wrong dimensions of the left calibration matrix");
+        return 0;
+    }
+
+    cv::Size imageSize(img_width,img_height);
+
+    StereoCamGeometricTools stereoCamGeometricToolsNode = StereoCamGeometricTools(P_l,P_r,imageSize);
     ros::ServiceServer service_feats = n.advertiseService("get_features_and_descriptor", &StereoCamGeometricTools::getFeaturesAndDescriptor, &stereoCamGeometricToolsNode);
     ros::ServiceServer service_transf = n.advertiseService("estimate_transformation", &StereoCamGeometricTools::estimateTransformation, &stereoCamGeometricToolsNode);
     ROS_INFO("Ready to do stuff.");

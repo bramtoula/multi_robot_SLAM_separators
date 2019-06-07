@@ -23,6 +23,6 @@ private:
                                           multi_robot_separators::GetFeatsAndDesc::Response &res);
     bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
                                 multi_robot_separators::EstTransform::Response &res);
-    StereoCamGeometricTools();
+    StereoCamGeometricTools(const cv::Mat &P_lt, const cv::Mat &P_rt, const cv::Size imageSizet);
     // void ~StereoCamGeometricTools();
 };
