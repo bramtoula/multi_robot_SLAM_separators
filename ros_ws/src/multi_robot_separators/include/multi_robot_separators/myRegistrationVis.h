@@ -59,7 +59,7 @@ protected:
 	StereoCameraModel stereoCameraModelFrom,
 	cv::Mat descriptorsFrom,
 	cv::Mat descriptorsTo,
-	cv::Mat imageTo,
+	cv::Size imageSize,
 	std::vector<cv::Point3f> kptsFrom3D,
 	std::vector<cv::Point3f> kptsTo3D,
 	std::vector<cv::KeyPoint> kptsFrom,

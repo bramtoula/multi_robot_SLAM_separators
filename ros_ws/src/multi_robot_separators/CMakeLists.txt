@@ -190,18 +190,14 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
+
 add_executable(est_transform_client src/estTransformCall.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
 target_link_libraries(est_transform_client ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
 add_dependencies(est_transform_client multi_robot_separators_gencpp)
 
-add_executable(est_transform_server src/estTransform.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
-target_link_libraries(est_transform_server ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(est_transform_server multi_robot_separators_gencpp)
-
-
-add_executable(get_feats_and_desc_server src/getFeatsAndDesc.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
-target_link_libraries(get_feats_and_desc_server ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(get_feats_and_desc_server multi_robot_separators_gencpp)
+add_executable(stereo_cam_geometric_tools src/stereoCamGeometricTools.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
+target_link_libraries(stereo_cam_geometric_tools ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
+add_dependencies(stereo_cam_geometric_tools multi_robot_separators_gencpp)
 
 #############
 ## Install ##

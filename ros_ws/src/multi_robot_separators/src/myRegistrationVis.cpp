@@ -439,17 +439,17 @@ void RegistrationVis::getFeaturesImpl(
 }
 
 Transform RegistrationVis::computeTransformationFromFeatsImpl(
-	StereoCameraModel stereoCameraModelTo,
-	StereoCameraModel stereoCameraModelFrom,
-	cv::Mat descriptorsFrom,
-	cv::Mat descriptorsTo,
-	cv::Mat imageTo,
-	std::vector<cv::Point3f> kptsFrom3D,
-	std::vector<cv::Point3f> kptsTo3D,
-	std::vector<cv::KeyPoint> kptsFrom,
-	std::vector<cv::KeyPoint> kptsTo,
-	Transform guess, // (flowMaxLevel is set to 0 when guess is used)
-	RegistrationInfo &info) const
+		StereoCameraModel stereoCameraModelTo,
+		StereoCameraModel stereoCameraModelFrom,
+		cv::Mat descriptorsFrom,
+		cv::Mat descriptorsTo,
+		cv::Size imageSize,
+		std::vector<cv::Point3f> kptsFrom3D,
+		std::vector<cv::Point3f> kptsTo3D,
+		std::vector<cv::KeyPoint> kptsFrom,
+		std::vector<cv::KeyPoint> kptsTo,
+		Transform guess, // (flowMaxLevel is set to 0 when guess is used)
+		RegistrationInfo &info) const
 {
 	std::multimap<int, cv::Mat> wordsDescFrom;
 	std::multimap<int, cv::Mat> wordsDescTo;
@@ -464,7 +464,7 @@ Transform RegistrationVis::computeTransformationFromFeatsImpl(
 		// We have all data we need here, so match!
 		if (descriptorsFrom.rows > 0 && descriptorsTo.rows > 0)
 		{
-			cv::Size imageSize = imageTo.size();
+			// cv::Size imageSize = imageTo.size();
 			bool isCalibrated = false; // multiple cameras not supported.
 			if (imageSize.height == 0 || imageSize.width == 0)
 			{

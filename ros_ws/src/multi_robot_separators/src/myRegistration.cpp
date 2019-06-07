@@ -206,7 +206,7 @@ Transform Registration::computeTransformationFromFeats(
 	StereoCameraModel stereoCameraModelFrom,
 	cv::Mat descriptorsFrom,
 	cv::Mat descriptorsTo,
-	cv::Mat imageTo,
+	cv::Size imageSize,
 	std::vector<cv::Point3f> kptsFrom3D,
 	std::vector<cv::Point3f> kptsTo3D,
 	std::vector<cv::KeyPoint> kptsFrom,
@@ -214,7 +214,7 @@ Transform Registration::computeTransformationFromFeats(
 	Transform guess, // (flowMaxLevel is set to 0 when guess is used)
 	RegistrationInfo *infoOut) const
 {
-	return computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, infoOut);
+	return computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageSize,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, infoOut);
 }
 
 
@@ -227,7 +227,7 @@ Transform Registration::computeTransformationModFromFeats(
 	StereoCameraModel stereoCameraModelFrom,
 	cv::Mat descriptorsFrom,
 	cv::Mat descriptorsTo,
-	cv::Mat imageTo,
+	cv::Size imageSize,
 	std::vector<cv::Point3f> kptsFrom3D,
 	std::vector<cv::Point3f> kptsTo3D,
 	std::vector<cv::KeyPoint> kptsFrom,
@@ -247,24 +247,24 @@ Transform Registration::computeTransformationModFromFeats(
 		guess = guess.to3DoF();
 	}
 
-	Transform t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,guess, info);
+	Transform t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageSize,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,guess, info);
 
 	if (child_)
 	{
 		if (!t.isNull())
 		{
-			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, force3DoF_ ? t.to3DoF() : t, &info);
+			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageSize,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, force3DoF_ ? t.to3DoF() : t, &info);
 		}
 		else if (!guess.isNull())
 		{
 			UDEBUG("This registration approach failed, continue with the guess for the next registration");
-			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, &info);
+			t = child_->computeTransformationModFromFeats(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageSize,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo, guess, &info);
 		}
 	}
 	else if (repeatOnce_ && guess.isNull() && !t.isNull() && this->canUseGuess())
 	{
 		// redo with guess to get a more accurate transform
-		t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageTo,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,t, info);;
+		t = computeTransformationFromFeatsImpl(stereoCameraModelTo,stereoCameraModelFrom ,descriptorsFrom,descriptorsTo, imageSize,kptsFrom3D,kptsTo3D,kptsFrom,kptsTo,t, info);;
 
 		if (!t.isNull() && force3DoF_)
 		{
