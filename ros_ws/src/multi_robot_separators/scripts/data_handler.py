@@ -1,11 +1,16 @@
 from cv_bridge import CvBridge, CvBridgeError
+import rospy
+import sys
+# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
+# sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import constants
 import tensorflow as tf
 import netvlad_tf.net_from_mat as nfm
 import netvlad_tf.nets as nets
-import numpy
-
+import numpy as np
+from multi_robot_separators.srv import *
+from sensor_msgs.msg import Image
 class DataHandler:
     def __init__(self):
         self.images_l = []
@@ -26,9 +31,11 @@ class DataHandler:
         self.sess = tf.Session()
         saver.restore(self.sess, nets.defaultCheckpoint())
 
-    def save_image_l(image_l):
+        self.bridge = CvBridge()
+
+    def save_image_l(self,image_l):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(image_l, "bgr8")
+            cv_image = self.bridge.imgmsg_to_cv2(image_l, "rgb8")
         except CvBridgeError as e:
             print(e)
         self.images_l.append(cv_image)
@@ -36,33 +43,38 @@ class DataHandler:
         # Compute descriptors (only done if enough images ready)
         self.compute_descriptors()
 
-    def save_image_r(image_r):
+    def save_image_r(self, image_r):
         try:
-            cv_image = self.bridge.imgmsg_to_cv2(image_r, "bgr8")
+            cv_image = self.bridge.imgmsg_to_cv2(image_r, "rgb8")
         except CvBridgeError as e:
             print(e)
         self.images_r.append(cv_image)
 
-    def compute_descriptors():
+    def compute_descriptors(self):
         # Check if enough data to fill a batch
-        if len(images_l) - len(descriptors) >= constants.BATCH_SIZE:
+        rospy.loginfo("Should I compute a descriptor ?")
+        if len(self.images_l) - len(self.descriptors) >= constants.BATCH_SIZE:
             # If so, compute and store descriptors
-            batch = [np.expand_dims(inim, axis=0) for inim in images_l[len(descriptors):]]
+            batch = self.images_l[len(self.descriptors):]
+            rospy.loginfo("I'm going to do it!")
+
             descriptors = self.sess.run(self.net_out, feed_dict={self.image_batch: batch})
+
+            rospy.loginfo("I did iiit!")
+
+            rospy.loginfo(descriptors)
 
             # Add descriptors to list
 
-    def find_matches(descriptors_to_comp):
+    def find_matches(self, descriptors_to_comp):
         # find closest matches between self.descriptors and descriptors_to_comp, use scipy.spatial.distance.cdist
         matches = []
         return matches
 
-
-    def get_images(image_id):
+    def get_images(self, image_id):
         return self.image_l[image_id], self.image_r[image_id]
 
-
-    def save_separator(transform, local_frame_id, other_robot_id, other_robot_frame_id):
+    def save_separator(self, transform, local_frame_id, other_robot_id, other_robot_frame_id):
         self.separators_found.append(
             (transform, local_frame_id, other_robot_id, other_robot_frame_id))
 

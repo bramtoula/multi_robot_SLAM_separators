@@ -113,23 +113,23 @@ int main(int argc, char **argv)
     std::vector<double> P_l_param;
     std::vector<double> P_r_param;
     int img_height, img_width;
-    if (!n.getParam("/image_size/height", img_height))
+    if (!n.getParam("image_size/height", img_height))
     {
         ROS_ERROR_STREAM("Height could not be read.");
         return 0;
     }
-    if (!n.getParam("/image_size/width", img_width))
+    if (!n.getParam("image_size/width", img_width))
     {
         ROS_ERROR_STREAM("Width could not be read.");
         return 0;
     }
-    if (!n.getParam("/P_l", P_l_param))
+    if (!n.getParam("P_l", P_l_param))
     {
         ROS_ERROR_STREAM("Left projection matrix could not be read.");
         return 0;
     }
 
-    if (!n.getParam("/P_r", P_r_param))
+    if (!n.getParam("P_r", P_r_param))
     {
         ROS_ERROR_STREAM("Right projection matrix could not be read.");
         return 0;

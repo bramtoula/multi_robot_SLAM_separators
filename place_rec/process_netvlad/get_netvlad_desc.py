@@ -17,12 +17,14 @@ saver = tf.train.Saver()
 sess = tf.Session()
 saver.restore(sess, nets.defaultCheckpoint())
 
-# images = [cv2.imread(file) for file in glob.glob("/Users/benjaminramtoula/Documents/Cours/POLYMTL/MISTLAB/SLAM/datasets/kitti/00_color/image_2/00000*.png")]
-# images = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB) for image in images]
+images = [cv2.imread(file) for file in glob.glob(
+    "/Users/benjaminramtoula/Documents/Cours/POLYMTL/MISTLAB/SLAM/datasets/kitti/dataset/sequences/00/image_2/00000*.png")]
+images = [cv2.cvtColor(image, cv2.COLOR_BGR2RGB) for image in images]
 print(images)
 inim = scipy.ndimage.imread(nfm.exampleImgPath())
-batch = np.expand_dims(inim,axis=0)
+# batch = np.expand_dims(inim,axis=0)
 # inim = cv2.imread(nfm.exampleImgPath())
 # inim = cv2.cvtColor(inim, cv2.COLOR_BGR2RGB)
-# batch = [np.expand_dims(inim, axis=0) for inim in images]
+batch = [np.expand_dims(inim, axis=0) for inim in images]
 result = sess.run(net_out, feed_dict={image_batch: batch})
+print(result)
