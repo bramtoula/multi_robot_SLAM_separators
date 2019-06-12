@@ -1,0 +1,6 @@
+float64[] netvlad_descriptors
+---
+uint8[] matched_ids
+Descriptors[] descriptors_vec
+KeyPoint3DVec[] kpts3D_vec
+KeyPointVec[] kpts_vec

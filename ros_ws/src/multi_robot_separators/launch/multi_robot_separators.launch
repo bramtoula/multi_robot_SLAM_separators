@@ -1,0 +1,7 @@
+<launch>
+  <group ns="robot_1">
+    <rosparam command="load" file="$(find multi_robot_separators)/cfg/stereo_cam_tools_params.yaml" />
+    <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools_node" name="stereo_cam_geometric_tools_node"/>
+    <node pkg="multi_robot_separators" type="find_separators" name="find_separators"/>
+  </group>
+</launch>

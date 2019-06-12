@@ -21,7 +21,10 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   sensor_msgs
+  roslaunch
 )
+
+roslaunch_add_file_check(launch)
 
 
 FIND_PACKAGE(RTABMap REQUIRED)
@@ -90,7 +93,8 @@ add_service_files(
   FILES
   EstTransform.srv
   GetFeatsAndDesc.srv
-#   Service2.srv
+  FindMatches.srv
+  ReceiveSeparators.srv
 )
 
 ## Generate actions in the 'action' folder
