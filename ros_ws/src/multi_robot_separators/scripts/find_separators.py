@@ -5,7 +5,7 @@ import sys
 # sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
 # sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
-# import numpy as np
+import numpy as np
 # import tensorflow as tf
 # import glob
 # import scipy
@@ -15,44 +15,45 @@ import cv2
 from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from data_handler import DataHandler
+from rtabmap_ros.msg import OdomInfo
+
+import random
+
 
 def find_separators():
-        rospy.init_node('find_separators', anonymous=False)
-        rate = rospy.Rate(10) # 10hz
+    rospy.init_node('find_separators', anonymous=False)
+    rate = rospy.Rate(0.3)  # 10hz
 
-        dataHandler = DataHandler()
+    dataHandler = DataHandler()
 
-        # Callbacks to save images
-        rospy.Subscriber("/kitti/camera_color_left/image_rect",
-                         Image, dataHandler.save_image_l)
-        rospy.Subscriber("/kitti/camera_color_right/image_rect", Image, dataHandler.save_image_r)
+    # Callbacks to save images and keyframes
+    rospy.Subscriber("left/image_rect",
+                     Image, dataHandler.save_image_l)
+    rospy.Subscriber("right/image_rect", Image, dataHandler.save_image_r)
 
-        # Initialize services
-        # s_find_matches = rospy.Service('find_matches', FindMatches, dataHandler.find_matches)
-        # s_send_separators = rospy.Service('receive_separators', ReceiveSeparators, dataHandler.receive_separators)
+    rospy.Subscriber("odom_info", OdomInfo, dataHandler.get_keyframes)
 
-        while not rospy.is_shutdown():
-        #     # main loop
-        #     service_list = rosservice.get_service_list()
-        #     # If other robot founds (through advertised service)
-        #         # If have a lower id
-        #             # Find matches (will get descriptors and match ids).
-        #                 # Service in: all descriptors, return: list of IDs, list of keypoints and visual descriptors
-        #                 rospy.wait_for_service('/robot_2/find_matches')
-        #                 try:
-        #                     find_matches_serv = rospy.ServiceProxy(
-        #                         '/robot_X/find_matches', FindMatches)
-        #                     resp_matches = find_matches_serv(dataHandler.get_descriptors())
-        #                 except rospy.ServiceException, e:
-        #                     print "Service call failed: %s"%e
+    # Initialize services
+    s_find_matches = rospy.Service(
+        'find_matches', FindMatches, dataHandler.find_matches_service)
+    s_receive_separators = rospy.Service(
+        'receive_separators', ReceiveSeparators, dataHandler.receive_separators_service)
+    i = 0
+    while not rospy.is_shutdown():
+        # main loop
+        i += 1
+        rospy.loginfo("i = "+str(i))
+        # Compute descriptors
+        dataHandler.compute_descriptors()
+        service_list = rosservice.get_service_list()
 
-        #             # Compute transform
-        #                 # Get visual stuff for matched IDs (using service)
-        #                 # Call service to compute transform
-        #                 # Send transform to other robot via service (In: transform, return: nothing)
+        if i == 5:
+            resp_matches = dataHandler.call_find_matches_serv()
+            if resp_matches:
+                dataHandler.call_receive_transform(
+                    resp_matches.matched_id_other, resp_matches.matched_id_other, resp_matches.descriptors_vec, resp_matches.kpts3D_vec, resp_matches.kpts_vec)
 
-            rate.sleep()
-
+        rate.sleep()
 
 
 if __name__ == '__main__':

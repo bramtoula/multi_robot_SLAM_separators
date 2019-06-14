@@ -1,4 +1,4 @@
-uint8[] matched_ids_1
-uint8[] matched_ids_2
+uint8[] matched_ids_local
+uint8[] matched_ids_other
 geometry_msgs/PoseWithCovariance[] separators
 ---
