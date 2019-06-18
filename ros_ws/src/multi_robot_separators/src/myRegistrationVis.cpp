@@ -26,6 +26,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 
+#include <flann/flann.hpp>
 
 #include "multi_robot_separators/myRegistrationVis.h"
 #include <rtabmap/core/util3d_motion_estimation.h>
@@ -43,7 +44,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <rtabmap/utilite/UTimer.h>
 #include <rtabmap/utilite/UMath.h>
 
-#include <flann/flann.hpp>
 
 namespace rtabmap {
 

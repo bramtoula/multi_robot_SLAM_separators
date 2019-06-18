@@ -22,7 +22,7 @@ import random
 
 def find_separators():
     rospy.init_node('find_separators', anonymous=False)
-    rate = rospy.Rate(0.3)  # 10hz
+    rate = rospy.Rate(0.3) 
 
     dataHandler = DataHandler()
 
@@ -47,7 +47,7 @@ def find_separators():
         dataHandler.compute_descriptors()
         service_list = rosservice.get_service_list()
 
-        if i == 5:
+        if i % 20:
             resp_matches = dataHandler.call_find_matches_serv()
             if resp_matches:
                 dataHandler.call_receive_transform(
