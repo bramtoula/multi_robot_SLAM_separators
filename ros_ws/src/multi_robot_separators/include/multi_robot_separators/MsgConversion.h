@@ -13,6 +13,10 @@
 
 #include <rtabmap/core/Transform.h>
 
+#include <gtsam/geometry/Pose3.h>
+#include <gtsam/geometry/Rot3.h>
+#include <gtsam/geometry/Point3.h>
+
 std::vector<cv::Point3f> keypoints3DFromROS(const multi_robot_separators::KeyPoint3DVec &msg);
 void keypoints3DToROS(const std::vector<cv::Point3f> &kpts, multi_robot_separators::KeyPoint3DVec &msg);
 
@@ -33,3 +37,7 @@ void keypointToROS(const cv::KeyPoint &kpt, rtabmap_ros::KeyPoint &msg);
 
 cv::Mat descriptorsFromROS(const multi_robot_separators::Descriptors &msg);
 void descriptorsToROS(const cv::Mat &descriptors, multi_robot_separators::Descriptors &msg);
+
+void covarianceToMatrix(const boost::array<double, 36ul> &msg, gtsam::Matrix &cov_mat_out);
+
+void transformToPose3(const geometry_msgs::Transform &msg, gtsam::Pose3 &pose3_out);

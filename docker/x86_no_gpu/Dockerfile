@@ -1,24 +1,28 @@
-FROM introlab3it/rtabmap_ros:kinetic-latest
+FROM introlab3it/rtabmap_ros:melodic-latest
 
-# Python 2
-RUN apt-get update && apt-get install -y libopenni2-dev wget vim unzip python-pip \
-    && pip install tensorflow opencv-python scipy==0.16\
+# Fix from http://answers.ros.org/question/325039/apt-update-fails-cannot-install-pkgs-key-not-working/, install python stuff and catkin tools
+RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 \
+    &&  apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654 \
+    && apt-get update && apt-get install -y libopenni2-dev wget vim unzip python-pip libmetis-dev\
+    && pip install tensorflow opencv-python scipy==0.16 \
     && sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list' \
     && wget http://packages.ros.org/ros.key -O - | apt-key add - \
     && apt-get update \
     && apt-get install -y python-catkin-tools \
     && rm -rf /var/lib/apt/lists/
 
-# # Python 3
-# RUN apt-get update && apt-get install -y libopenni2-dev wget vim unzip python3-pip python3-yaml \
-#     && pip3 install tensorflow opencv-python scipy rospkg catkin_pkg\
-#     && sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list' \
-#     && wget http://packages.ros.org/ros.key -O - | apt-key add - \
-#     && apt-get update \
-#     && apt-get install -y python-catkin-tools \
-#     && rm -rf /var/lib/apt/lists/
-
 WORKDIR /root/
+
+
+# GTSAM 
+RUN git clone https://bitbucket.org/gtborg/gtsam  \
+    && cd gtsam \
+    && mkdir build \
+    && cd build \
+    && cmake .. \
+    && make -j4 \
+    && make install
+
 
 ARG counter1
 # Clone my repo
@@ -37,6 +41,4 @@ RUN cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && 
 
 RUN chmod +x multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts/find_separators.py
 
-# # Fix python path to use python3 with ros kinetic
-# RUN echo 'export PYTHONPATH=/usr/local/lib/python3.5/dist-packages/:$PYTHONPATH' >> .bashrc 
 ENV PYTHONPATH=":PYTHONPATH:/root/multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts/netvlad_tf_open/python"

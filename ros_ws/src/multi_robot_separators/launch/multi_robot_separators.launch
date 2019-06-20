@@ -5,8 +5,9 @@
     <remap from="right/image_rect" to="/kitti/camera_color_right/image_rect"/>
     <remap from="left/camera_info" to="/kitti/camera_color_left/camera_info"/>
     <remap from="right/camera_info" to="/kitti/camera_color_right/camera_info"/>
-    <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools"/>
-    <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators"/>
+    <!-- <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools"/>
+    <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators"/> -->
+    <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/>
     <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 base_link camera_color_left" />
     <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry"/>
   </group>

@@ -138,3 +138,21 @@ void point3fToROS(const cv::Point3f &kpt, rtabmap_ros::Point3f &msg)
     msg.y = kpt.y;
     msg.z = kpt.z;
 }
+
+void covarianceToMatrix(const boost::array<double, 36ul> &msg, gtsam::Matrix &cov_mat_out)
+{
+    for (int row = 0; row < 6; row++)
+    {
+        for (int col = 0; col < 6; col++)
+        {
+            cov_mat_out(row,col) = msg[col+row*6];
+        }
+    }
+}
+
+void transformToPose3(const geometry_msgs::Transform &msg, gtsam::Pose3 &pose3_out)
+{
+    gtsam::Rot3 rot(msg.rotation.w,msg.rotation.x,msg.rotation.y,msg.rotation.z);
+    gtsam::Point3 pt(msg.translation.x, msg.translation.y, msg.translation.z);
+    pose3_out = gtsam::Pose3(rot,pt);
+}

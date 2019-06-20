@@ -29,6 +29,7 @@ roslaunch_add_file_check(launch)
 
 FIND_PACKAGE(RTABMap REQUIRED)
 FIND_PACKAGE(OpenCV REQUIRED)
+FIND_PACKAGE(GTSAM REQUIRED)
 FIND_PACKAGE(PCL 1.7 REQUIRED)
 
 # Find Qt5 first
@@ -47,14 +48,6 @@ if(POLICY CMP0020)
 endif()
 
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -97,12 +90,6 @@ add_service_files(
   ReceiveSeparators.srv
 )
 
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
@@ -113,25 +100,6 @@ generate_messages(
   sensor_msgs
 )
 
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a exec_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
 
 ###################################
 ## catkin specific configuration ##
@@ -156,13 +124,16 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
   ${RTABMap_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
   ${PCL_INCLUDE_DIRS}
+  ${GTSAM_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+link_directories(${GTSAM_LIBRARY_DIRS})
+
 
 ## Declare a C++ library
 #add_library(${PROJECT_NAME}
@@ -195,13 +166,18 @@ include_directories(
 # )
 
 
-add_executable(est_transform_client src/estTransformCall.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
-target_link_libraries(est_transform_client ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
-add_dependencies(est_transform_client multi_robot_separators_gencpp)
-
 add_executable(stereo_cam_geometric_tools src/stereoCamGeometricTools.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
-target_link_libraries(stereo_cam_geometric_tools ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES})
+target_link_libraries(stereo_cam_geometric_tools ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam)
 add_dependencies(stereo_cam_geometric_tools multi_robot_separators_gencpp)
+
+#add_executable(factor_graph src/factorGraph.cpp)
+#target_link_libraries(factor_graph ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam)
+#add_dependencies(factor_graph multi_robot_separators_gencpp)
+
+add_executable(factor_graph src/factorGraph.cpp src/MsgConversion.cpp)
+target_link_libraries(factor_graph ${catkin_LIBRARIES} gtsam)
+add_dependencies(factor_graph ${catkin_EXPORTED_TARGETS})
+
 
 #############
 ## Install ##
