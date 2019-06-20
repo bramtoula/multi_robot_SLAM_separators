@@ -29,9 +29,10 @@ FactorGraphData::FactorGraphData()
 
     nb_keyframes_ = 0;
     resetPoseWithCovariance(accumulated_transform_);
+    cur_pose_ = gtsam::Pose3();
 
     gtsam::Symbol  init_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
-    poses_initial_guess_.insert(init_symbol.key(), accumulated_transform_.pose);
+    poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
 }
 
 void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
@@ -54,6 +55,8 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
         gtsam::Symbol robot_cur_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_+1);
         gtsam::Symbol robot_prev_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
 
+        cur_pose_ = cur_pose_.compose(accumulated_transform_.pose);
+        poses_initial_guess_.insert(robot_cur_symbol.key(), cur_pose_);
         // ROS_INFO("Keyframe added");
         // ROS_INFO("%f %f %f", accumulated_transform_.pose.x(), accumulated_transform_.pose.y(), accumulated_transform_.pose.z());
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(accumulated_transform_.covariance_matrix);
@@ -63,12 +66,12 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 
         pose_graph_.push_back(new_factor);
 
-        // if(nb_keyframes_ == 15)
-        // {
-        //     ROS_INFO("WRiting lOg");
-        //     std::string dataset_file_name = "log.g2o";
-        //     gtsam::writeG2o(pose_graph_, poses_initial_guess_,dataset_file_name);
-        // }
+        if(nb_keyframes_ == 15)
+        {
+            ROS_INFO("WRiting lOg");
+            std::string dataset_file_name = "log.g2o";
+            gtsam::writeG2o(pose_graph_, poses_initial_guess_,dataset_file_name);
+        }
 
         // Reset the accumulated transform to compute the one from the latest keyframe to the next one
         resetPoseWithCovariance(accumulated_transform_);

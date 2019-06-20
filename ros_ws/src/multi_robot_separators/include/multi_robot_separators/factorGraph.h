@@ -26,7 +26,7 @@ private:
     /* data */
     gtsam::NonlinearFactorGraph pose_graph_;
     gtsam::Values poses_initial_guess_;
-
+    gtsam::Pose3 cur_pose_;
     int robot_id_;
     unsigned char robot_id_char_;
     int nb_keyframes_;
