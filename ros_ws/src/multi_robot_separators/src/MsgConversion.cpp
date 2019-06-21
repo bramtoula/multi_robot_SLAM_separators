@@ -156,3 +156,10 @@ void transformToPose3(const geometry_msgs::Transform &msg, gtsam::Pose3 &pose3_o
     gtsam::Point3 pt(msg.translation.x, msg.translation.y, msg.translation.z);
     pose3_out = gtsam::Pose3(rot,pt);
 }
+
+void poseROSToPose3(const geometry_msgs::Pose &msg, gtsam::Pose3 &pose3_out)
+{
+    gtsam::Rot3 rot(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z);
+    gtsam::Point3 pt(msg.position.x, msg.position.y, msg.position.z);
+    pose3_out = gtsam::Pose3(rot, pt);
+}

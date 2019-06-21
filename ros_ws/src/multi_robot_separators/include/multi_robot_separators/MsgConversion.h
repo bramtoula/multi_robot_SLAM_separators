@@ -41,3 +41,4 @@ void descriptorsToROS(const cv::Mat &descriptors, multi_robot_separators::Descri
 void covarianceToMatrix(const boost::array<double, 36ul> &msg, gtsam::Matrix &cov_mat_out);
 
 void transformToPose3(const geometry_msgs::Transform &msg, gtsam::Pose3 &pose3_out);
+void poseROSToPose3(const geometry_msgs::Pose &msg, gtsam::Pose3 &pose3_out);

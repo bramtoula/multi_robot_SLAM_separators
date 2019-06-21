@@ -7,6 +7,37 @@ void resetPoseWithCovariance(PoseWithCovariance &toReset)
     toReset.covariance_matrix = gtsam::zeros(6, 6);
 }
 
+bool FactorGraphData::addSeparator(multi_robot_separators::ReceiveSeparators::Request &req,
+                                   multi_robot_separators::ReceiveSeparators::Response &res)
+{
+    gtsam::Matrix covariance_mat = gtsam::zeros(6, 6);
+    gtsam::Pose3 separator;
+
+    for (int idx = 0; idx < req.matched_ids_local.size(); idx++)
+    {
+
+        // TODO Change the id of other robot
+        char other_robot_id_char = 2 + '0';
+        gtsam::Symbol cur_robot_symbol = gtsam::Symbol(robot_id_char_, req.matched_ids_other[idx]);
+
+        gtsam::Symbol other_robot_symbol = gtsam::Symbol(other_robot_id_char, req.matched_ids_local[idx]);
+
+        // TODO Check that the covariance is taken with the correct order of the transform (if that actually makes any sense)
+        covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
+
+        poseROSToPose3(req.separators[idx].pose, separator);
+
+        gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(covariance_mat);
+
+        // TODO check order of symbols
+        gtsam::BetweenFactor<gtsam::Pose3> new_factor = gtsam::BetweenFactor<gtsam::Pose3>(cur_robot_symbol, other_robot_symbol, separator, noise_model);
+
+        pose_graph_.push_back(new_factor);
+    }
+    res.success = true;
+    return true;
+}
+
 void FactorGraphData::poseCompose(const PoseWithCovariance &a,
                                   const PoseWithCovariance &b,
                                   PoseWithCovariance &out)
@@ -31,7 +62,7 @@ FactorGraphData::FactorGraphData()
     resetPoseWithCovariance(accumulated_transform_);
     cur_pose_ = gtsam::Pose3();
 
-    gtsam::Symbol  init_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
+    gtsam::Symbol init_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
     poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
 }
 
@@ -52,7 +83,7 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
     // Add a node if the current frame is a keyframe
     if (msg->keyFrameAdded)
     {
-        gtsam::Symbol robot_cur_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_+1);
+        gtsam::Symbol robot_cur_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_ + 1);
         gtsam::Symbol robot_prev_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
 
         cur_pose_ = cur_pose_.compose(accumulated_transform_.pose);
@@ -61,12 +92,12 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
         // ROS_INFO("%f %f %f", accumulated_transform_.pose.x(), accumulated_transform_.pose.y(), accumulated_transform_.pose.z());
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(accumulated_transform_.covariance_matrix);
         gtsam::BetweenFactor<gtsam::Pose3>
-                new_factor = gtsam::BetweenFactor<gtsam::Pose3>(robot_prev_symbol, robot_cur_symbol, accumulated_transform_.pose, noise_model);
+            new_factor = gtsam::BetweenFactor<gtsam::Pose3>(robot_prev_symbol, robot_cur_symbol, accumulated_transform_.pose, noise_model);
         nb_keyframes_ += 1;
 
         pose_graph_.push_back(new_factor);
 
-        if(nb_keyframes_ == 15)
+        if(nb_keyframes_ == 30)
         {
             ROS_INFO("WRiting lOg");
             std::string dataset_file_name = "log.g2o";
@@ -85,7 +116,7 @@ int main(int argc, char **argv)
     ros::NodeHandle n;
 
     ros::Subscriber sub_odom = n.subscribe("odom_info", 1000, &FactorGraphData::addOdometry, &factorGraphData);
-
+    ros::ServiceServer s_add_separators = n.advertiseService("add_separators_pose_graph", &FactorGraphData::addSeparator, &factorGraphData);
     ros::spin();
 
     return 0;

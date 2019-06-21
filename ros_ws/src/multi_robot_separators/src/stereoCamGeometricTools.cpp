@@ -97,8 +97,6 @@ bool StereoCamGeometricTools::estimateTransformation(multi_robot_separators::Est
         result,
         &info);
 
-    printf("Mine %s\n", result2.prettyPrint().c_str());
-
     covToFloat64Msg(info.covariance, res.poseWithCov.covariance);
     transformToPoseMsg(result2, res.poseWithCov.pose);
     return true;

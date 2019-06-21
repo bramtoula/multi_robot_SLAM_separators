@@ -11,7 +11,7 @@
 #include <gtsam/slam/dataset.h>
 
 #include "multi_robot_separators/MsgConversion.h"
-
+#include "multi_robot_separators/ReceiveSeparators.h"
 typedef struct PoseWithCovariance PoseWithCovariance;
 
 struct PoseWithCovariance
@@ -37,8 +37,10 @@ private:
 
 public:
     void addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg);
+    bool addSeparator(multi_robot_separators::ReceiveSeparators::Request &req,
+                      multi_robot_separators::ReceiveSeparators::Response &res);    
 
-    FactorGraphData();
+        FactorGraphData();
 };
 
 void resetPoseWithCovariance(PoseWithCovariance &toReset);

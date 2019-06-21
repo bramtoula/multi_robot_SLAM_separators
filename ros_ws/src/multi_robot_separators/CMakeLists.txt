@@ -170,14 +170,13 @@ add_executable(stereo_cam_geometric_tools src/stereoCamGeometricTools.cpp src/my
 target_link_libraries(stereo_cam_geometric_tools ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam)
 add_dependencies(stereo_cam_geometric_tools multi_robot_separators_gencpp)
 
-#add_executable(factor_graph src/factorGraph.cpp)
-#target_link_libraries(factor_graph ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam)
-#add_dependencies(factor_graph multi_robot_separators_gencpp)
-
 add_executable(factor_graph src/factorGraph.cpp src/MsgConversion.cpp)
 target_link_libraries(factor_graph ${catkin_LIBRARIES} gtsam)
 add_dependencies(factor_graph ${catkin_EXPORTED_TARGETS})
 
+add_executable(communication src/communication.cpp)
+target_link_libraries(communication ${catkin_LIBRARIES})
+add_dependencies(communication ${catkin_EXPORTED_TARGETS})
 
 #############
 ## Install ##

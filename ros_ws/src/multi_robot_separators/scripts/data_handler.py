@@ -155,8 +155,7 @@ class DataHandler:
                 (receive_separators_req.matched_ids_local[i], receive_separators_req.matched_ids_other[i], receive_separators_req.separators[i]))
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
-        rospy.loginfo(self.separators_found)
-        return []
+        return ReceiveSeparatorsResponse(True)
 
     def get_features(self, id):
         img_l = cv2.cvtColor(self.images_l_kf[id], cv2.COLOR_RGB2GRAY)
@@ -173,18 +172,18 @@ class DataHandler:
             resp_feats_and_descs = []
         return resp_feats_and_descs
 
-    def call_find_matches_serv(self):
-        desc = list(self.descriptors)
-        # random.shuffle(desc)
-        try:
-            s_ans_find_matches = rospy.ServiceProxy(
-                'find_matches', FindMatches)
-            flatten_desc = [
-                item for sublist in desc for item in sublist]
-            return s_ans_find_matches(flatten_desc)
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
-            return []
+    # def call_find_matches_serv(self):
+    #     desc = list(self.descriptors)
+    #     # random.shuffle(desc)
+    #     try:
+    #         s_ans_find_matches = rospy.ServiceProxy(
+    #             'find_matches_compute', FindMatches)
+    #         flatten_desc = [
+    #             item for sublist in desc for item in sublist]
+    #         return s_ans_find_matches(flatten_desc)
+    #     except rospy.ServiceException, e:
+    #         print "Service call failed: %s" % e
+    #         return []
 
     def call_receive_transform(self, match_ids_local, match_ids_other, other_descriptors_vec, other_kpts3D_vec, other_kpts_vec):
         matched_ids_local_kept = []
@@ -210,8 +209,16 @@ class DataHandler:
 
         try:
             s_ans_rec_sep = rospy.ServiceProxy(
-                'receive_separators', ReceiveSeparators)
+                'found_separators_send', ReceiveSeparators)
             s_ans_rec_sep(matched_ids_local_kept,
+                          matched_ids_other_kept, separators_found)
+        except rospy.ServiceException, e:
+            print "Service call failed: %s" % e
+
+        try:
+            s_add_seps_pose_graph = rospy.ServiceProxy(
+                'add_separators_pose_graph', ReceiveSeparators)
+            s_add_seps_pose_graph(matched_ids_local_kept,
                           matched_ids_other_kept, separators_found)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
