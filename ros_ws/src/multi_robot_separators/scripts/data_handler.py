@@ -1,9 +1,7 @@
 from cv_bridge import CvBridge, CvBridgeError
 import rospy
 import sys
-# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
-# sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import constants
 import tensorflow as tf
 import netvlad_tf.net_from_mat as nfm
@@ -171,55 +169,3 @@ class DataHandler:
             print "Service call failed: %s" % e
             resp_feats_and_descs = []
         return resp_feats_and_descs
-
-    # def call_find_matches_serv(self):
-    #     desc = list(self.descriptors)
-    #     # random.shuffle(desc)
-    #     try:
-    #         s_ans_find_matches = rospy.ServiceProxy(
-    #             'find_matches_compute', FindMatches)
-    #         flatten_desc = [
-    #             item for sublist in desc for item in sublist]
-    #         return s_ans_find_matches(flatten_desc)
-    #     except rospy.ServiceException, e:
-    #         print "Service call failed: %s" % e
-    #         return []
-
-    def call_receive_transform(self, match_ids_local, match_ids_other, other_descriptors_vec, other_kpts3D_vec, other_kpts_vec):
-        matched_ids_local_kept = []
-
-        matched_ids_other_kept = []
-        separators_found = []
-        for i in range(len(match_ids_local)):
-            resp_local_features_and_desc = self.get_features(
-                match_ids_local[i])
-            try:
-                s_ans_est_transform = rospy.ServiceProxy(
-                    'estimate_transformation', EstTransform)
-                resp_transform = s_ans_est_transform(
-                    resp_local_features_and_desc.descriptors, other_descriptors_vec[i], resp_local_features_and_desc.kpts3D, other_kpts3D_vec[i], resp_local_features_and_desc.kpts, other_kpts_vec[i])
-            except rospy.ServiceException, e:
-                print "Service call failed: %s" % e
-                continue
-            matched_ids_local_kept.append(
-                match_ids_local[i])
-            matched_ids_other_kept.append(
-                match_ids_other[i])
-            separators_found.append(resp_transform.poseWithCov)
-
-        try:
-            s_ans_rec_sep = rospy.ServiceProxy(
-                'found_separators_send', ReceiveSeparators)
-            s_ans_rec_sep(matched_ids_local_kept,
-                          matched_ids_other_kept, separators_found)
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
-
-        try:
-            s_add_seps_pose_graph = rospy.ServiceProxy(
-                'add_separators_pose_graph', ReceiveSeparators)
-            s_add_seps_pose_graph(matched_ids_local_kept,
-                          matched_ids_other_kept, separators_found)
-        except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
-        return

@@ -49,6 +49,9 @@ def find_separators():
 
         if i % 20 and (len(dataHandler.descriptors) > 0):
             # resp_matches = dataHandler.call_find_matches_serv()
+            matched_ids_local_kept = []
+            matched_ids_other_kept = []
+            separators_found = []
 
             # Call service to find matches and corresponding keypoints and geometric descriptors
             try:
@@ -56,16 +59,46 @@ def find_separators():
                     'find_matches_query', FindMatches)
                 flatten_desc = [
                     item for sublist in list(dataHandler.descriptors) for item in sublist]
-                resp_matches = s_find_matches_query(flatten_desc)
+                res_matches = s_find_matches_query(flatten_desc)
             except rospy.ServiceException, e:
                 print "Service call to find matches query failed: %s" % e
                 break
 
             # If matches are found, compute the separators, send them back, and add them to the pose graph
-            if len(resp_matches.matched_id_other) > 0:
-                dataHandler.call_receive_transform(
-                    resp_matches.matched_id_other, resp_matches.matched_id_other, resp_matches.descriptors_vec, resp_matches.kpts3D_vec, resp_matches.kpts_vec)
+            for i in range(len(res_matches.matched_id_other)):
+                # Compute geometric features of the local frames that were matched. Use matched_id_other since it is from the point of view of the other robot.
+                local_features_and_desc = dataHandler.get_features(res_matches.matched_id_other[i])
 
+                # Get the transformation
+                try:
+                    s_ans_est_transform = rospy.ServiceProxy(
+                        'estimate_transformation', EstTransform)
+                    res_transform = s_ans_est_transform(
+                        local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s" % e
+                    continue
+                matched_ids_local_kept.append(res_matches.matched_id_other[i])
+                matched_ids_other_kept.append(res_matches.matched_id_local[i])
+                separators_found.append(res_transform.poseWithCov)
+                
+                # Add the separator to the factor graph
+                try:
+                    s_add_seps_pose_graph = rospy.ServiceProxy(
+                        'add_separators_pose_graph', ReceiveSeparators)
+                    s_add_seps_pose_graph(matched_ids_local_kept,
+                                        matched_ids_other_kept, separators_found)
+                except rospy.ServiceException, e:
+                    print "Service call add sep to pose graph failed: %s" % e
+
+                # Send the separator back to the other robot
+                try:
+                    s_ans_rec_sep = rospy.ServiceProxy(
+                        'found_separators_send', ReceiveSeparators)
+                    s_ans_rec_sep(matched_ids_local_kept,
+                                matched_ids_other_kept, separators_found)
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s" % e
         rate.sleep()
 
 
