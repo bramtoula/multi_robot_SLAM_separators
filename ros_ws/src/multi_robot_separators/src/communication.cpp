@@ -2,7 +2,7 @@
 
 Communicater::Communicater() 
 {
-    if (n_.getParam("/other_robot_id", other_robot_id_))
+    if (n_.getParam("other_robot_id", other_robot_id_))
     {
         ROS_INFO("Other robot ID is %d ", other_robot_id_);
     }

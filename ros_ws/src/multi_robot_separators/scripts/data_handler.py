@@ -38,6 +38,9 @@ class DataHandler:
 
         self.bridge = CvBridge()
 
+        self.local_robot_id = rospy.get_param("local_robot_id")
+        self.other_robot_id = rospy.get_param("other_robot_id")
+
     def save_image_l(self, image_l):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(image_l, "rgb8")

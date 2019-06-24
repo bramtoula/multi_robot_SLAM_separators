@@ -1,3 +1,4 @@
+int8 sending_robot_id
 int8[] matched_ids_local
 int8[] matched_ids_other
 geometry_msgs/PoseWithCovariance[] separators

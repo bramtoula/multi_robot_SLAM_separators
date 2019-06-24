@@ -27,10 +27,10 @@ private:
     gtsam::NonlinearFactorGraph pose_graph_;
     gtsam::Values poses_initial_guess_;
     gtsam::Pose3 cur_pose_;
-    int robot_id_;
+    int local_robot_id_;
     int other_robot_id_;
     unsigned char other_robot_id_char_;
-    unsigned char robot_id_char_;
+    unsigned char local_robot_id_char_;
     int nb_keyframes_;
     PoseWithCovariance accumulated_transform_;
     void poseCompose(const PoseWithCovariance &a,

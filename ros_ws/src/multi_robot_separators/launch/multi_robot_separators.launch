@@ -1,8 +1,13 @@
 <launch>
 
-  <param name="other_robot_id" type="int" value="1" />
 
+<!-- Change the robot id here too! -->
   <group ns="robot_1">
+
+    <!-- Don't forger to change the robot ID in the name space! -->
+    <param name="local_robot_id" type="int" value="1" />
+    <param name="other_robot_id" type="int" value="1" />
+
     <rosparam command="load" file="$(find multi_robot_separators)/cfg/stereo_cam_tools_params.yaml" />
     <remap from="left/image_rect" to="/kitti/camera_color_left/image_rect"/>
     <remap from="right/image_rect" to="/kitti/camera_color_right/image_rect"/>
