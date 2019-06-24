@@ -1,11 +1,23 @@
 #include "multi_robot_separators/communication.h"
 
-Communicater::Communicater(){   }
+Communicater::Communicater() 
+{
+    if (n_.getParam("/other_robot_id", other_robot_id_))
+    {
+        ROS_INFO("Other robot ID is %d ", other_robot_id_);
+    }
+    else
+    {
+        ROS_ERROR("Couldn't find other robot ID");
+    }
+}
 
 bool Communicater::found_separators_send(multi_robot_separators::ReceiveSeparators::Request &req,
                                          multi_robot_separators::ReceiveSeparators::Response &res)
 {
-    ros::ServiceClient client = n_.serviceClient<multi_robot_separators::ReceiveSeparators>("found_separators_receive");
+    
+    std::string service_name = "/robot_"+std::to_string(other_robot_id_)+"/found_separators_receive";
+    ros::ServiceClient client = n_.serviceClient<multi_robot_separators::ReceiveSeparators>(service_name);
     multi_robot_separators::ReceiveSeparators srv;
     srv.request = req;
     if (client.call(srv))
@@ -40,9 +52,10 @@ bool Communicater::found_separators_receive(multi_robot_separators::ReceiveSepar
 }
 
 bool Communicater::find_matches_query(multi_robot_separators::FindMatches::Request &req,
-                        multi_robot_separators::FindMatches::Response &res)
+                                      multi_robot_separators::FindMatches::Response &res)
 {
-    ros::ServiceClient client = n_.serviceClient<multi_robot_separators::FindMatches>("find_matches_answer");
+    std::string service_name = "/robot_" + std::to_string(other_robot_id_) + "/find_matches_answer";
+    ros::ServiceClient client = n_.serviceClient<multi_robot_separators::FindMatches>(service_name);
     multi_robot_separators::FindMatches srv;
     srv.request = req;
     if (client.call(srv))

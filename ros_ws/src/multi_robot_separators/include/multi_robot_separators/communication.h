@@ -1,3 +1,5 @@
+#include <string>
+
 #include "ros/ros.h"
 #include "multi_robot_separators/ReceiveSeparators.h"
 #include "multi_robot_separators/FindMatches.h"
@@ -6,6 +8,7 @@ class Communicater
 {
 private:
     /* data */
+    int other_robot_id_;
 
 
 public:

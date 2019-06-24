@@ -1,4 +1,7 @@
 <launch>
+
+  <param name="other_robot_id" type="int" value="1" />
+
   <group ns="robot_1">
     <rosparam command="load" file="$(find multi_robot_separators)/cfg/stereo_cam_tools_params.yaml" />
     <remap from="left/image_rect" to="/kitti/camera_color_left/image_rect"/>
