@@ -1,5 +1,5 @@
-uint8[] matched_ids_local
-uint8[] matched_ids_other
+int8[] matched_ids_local
+int8[] matched_ids_other
 geometry_msgs/PoseWithCovariance[] separators
 ---
 bool success

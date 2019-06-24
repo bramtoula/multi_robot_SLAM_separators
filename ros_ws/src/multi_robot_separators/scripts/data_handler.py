@@ -23,6 +23,7 @@ class DataHandler:
         self.timestamps_kf = []
         self.descriptors = []
         self.separators_found = []
+        self.kf_already_used = []
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -74,7 +75,15 @@ class DataHandler:
     def find_matches(self, descriptors_to_comp):
         # find closest matches between self.descriptors and descriptors_to_comp, use scipy.spatial.distance.cdist
         local_descs = np.array(self.descriptors)
+
         distances = cdist(local_descs, descriptors_to_comp)
+
+        # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
+        # Increase distances for local frames which were already matched so we can discover new frames
+        rospy.loginfo(self.kf_already_used)
+        if len(self.kf_already_used)>0:
+            distances[np.array(self.kf_already_used)] = np.inf 
+
         indexes_smallest_values = np.argsort(distances, axis=None)
         indexes_smallest_values = np.unravel_index(
             indexes_smallest_values, (len(local_descs), len(descriptors_to_comp)))
@@ -85,14 +94,22 @@ class DataHandler:
             idx_other = indexes_smallest_values[1][i]
             if distances[idx_local, idx_other] < constants.MATCH_DISTANCE:
                 matches.append((idx_local, idx_other))
+            else:
+                break
+
+        rospy.loginfo("Find matches")
+        rospy.loginfo(matches)
         return matches
 
     def get_images(self, image_id):
         return self.image_l[image_id], self.image_r[image_id]
 
-    def save_separator(self, transform, local_frame_id, other_robot_id, other_robot_frame_id):
-        self.separators_found.append(
-            (transform, local_frame_id, other_robot_id, other_robot_frame_id))
+    # def save_separator(self, transform, local_frame_id, other_robot_id, other_robot_frame_id):
+    #     rospy.loginfo("Savng separator")
+    #     self.separators_found.append(
+    #         (transform, local_frame_id, other_robot_id, other_robot_frame_id))
+
+    #     self.kf_already_used.append(local_frame_id)
 
     def get_keyframes(self, odom_info):
         if odom_info.keyFrameAdded:
@@ -148,11 +165,16 @@ class DataHandler:
 
     def receive_separators_service(self, receive_separators_req):
         rospy.loginfo("Reached receiving separators service")
+        rospy.loginfo(receive_separators_req.matched_ids_local)
+        rospy.loginfo(receive_separators_req.matched_ids_other)
         for i in range(len(receive_separators_req.matched_ids_local)):
+            rospy.loginfo(receive_separators_req.matched_ids_local[i])
             self.separators_found.append(
                 (receive_separators_req.matched_ids_local[i], receive_separators_req.matched_ids_other[i], receive_separators_req.separators[i]))
-        rospy.loginfo("Currently found " +
-                      str(len(self.separators_found))+" separators")
+            rospy.loginfo(receive_separators_req.matched_ids_local[i])
+            self.kf_already_used.append(
+                receive_separators_req.matched_ids_local[i])
+        rospy.loginfo("Currently found " +str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)
 
     def get_features(self, id):
@@ -169,3 +191,10 @@ class DataHandler:
             print "Service call failed: %s" % e
             resp_feats_and_descs = []
         return resp_feats_and_descs
+
+
+    # def check_already_matched(match_id):
+    #     if match_id in self.kf_already_used:
+    #         return True
+    #     else:
+    #         return False

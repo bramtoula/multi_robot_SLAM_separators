@@ -73,6 +73,7 @@ def find_separators():
                 try:
                     s_ans_est_transform = rospy.ServiceProxy(
                         'estimate_transformation', EstTransform)
+                    # Transform computed FROM local_features_and_desc TO res_matches (other robot)
                     res_transform = s_ans_est_transform(
                         local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
                 except rospy.ServiceException, e:

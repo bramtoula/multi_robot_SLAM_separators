@@ -99,7 +99,7 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 
         if(nb_keyframes_ == 30)
         {
-            ROS_INFO("WRiting lOg");
+            ROS_INFO("Writing log");
             std::string dataset_file_name = "log.g2o";
             gtsam::writeG2o(pose_graph_, poses_initial_guess_,dataset_file_name);
         }
