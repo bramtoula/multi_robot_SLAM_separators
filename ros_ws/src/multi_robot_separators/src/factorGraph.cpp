@@ -64,11 +64,13 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
     {
         if (local_robot_id_ < req.sending_robot_id)
         {
+            // local robot goes with matched other since message comes from the sending robot
             low_id_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
             high_id_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_local[idx]);
         }
         else
         {
+            // local robot goes with matched other since message comes from the sending robot
             high_id_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
             low_id_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_local[idx]);
         }

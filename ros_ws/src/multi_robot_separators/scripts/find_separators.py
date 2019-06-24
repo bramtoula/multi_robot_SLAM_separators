@@ -96,7 +96,10 @@ def find_separators():
                         continue
                 matched_ids_local_kept.append(res_matches.matched_id_other[i])
                 matched_ids_other_kept.append(res_matches.matched_id_local[i])
-                separators_found.append(res_transform.poseWithCov)
+
+                # Code returns the covariance with translation variables first and rotation after. We want rotation first
+                separator_order_cov_corr = dataHandler.change_var_order_cov(res_transform.poseWithCov)
+                separators_found.append(separator_order_cov_corr)
 
                 # Add the separator to the factor graph
                 try:

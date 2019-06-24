@@ -210,3 +210,17 @@ class DataHandler:
     #         return True
     #     else:
     #         return False
+
+    def change_var_order_cov(self,separator_poseWithCov):
+        cov_t_first = np.asarray(separator_poseWithCov.covariance).reshape((6,6))
+        cov_r_first = np.zeros((6,6))
+        
+        separator_corr = separator_poseWithCov
+        cov_r_first[:3, :3] = cov_t_first[3:, 3:]
+        cov_r_first[3:,3:] = cov_t_first[:3, :3]
+        cov_r_first[3:,:3] = cov_t_first[:3, 3:]
+        cov_r_first[:3,3:] = cov_t_first[3:, :3]
+
+        
+        separator_corr.covariance = tuple(cov_r_first.flatten())
+        return separator_corr
