@@ -10,7 +10,6 @@ private:
     /* data */
     int other_robot_id_;
 
-
 public:
     bool find_matches_query(multi_robot_separators::FindMatches::Request &req,
                             multi_robot_separators::FindMatches::Response &res);
@@ -19,10 +18,10 @@ public:
                              multi_robot_separators::FindMatches::Response &res);
 
     bool found_separators_send(multi_robot_separators::ReceiveSeparators::Request &req,
-                                             multi_robot_separators::ReceiveSeparators::Response &res);
+                               multi_robot_separators::ReceiveSeparators::Response &res);
 
     bool found_separators_receive(multi_robot_separators::ReceiveSeparators::Request &req,
-                                             multi_robot_separators::ReceiveSeparators::Response &res);
-        ros::NodeHandle n_;
+                                  multi_robot_separators::ReceiveSeparators::Response &res);
+    ros::NodeHandle n_;
     Communicater();
 };

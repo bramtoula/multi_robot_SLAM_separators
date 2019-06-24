@@ -1,13 +1,44 @@
 #include "multi_robot_separators/factorGraph.h"
 #include <stdlib.h>
 
+FactorGraphData::FactorGraphData(ros::NodeHandle n)
+{
+    // Get other robot id
+    if (n.getParam("/other_robot_id", other_robot_id_))
+    {
+        ROS_INFO("Other robot ID is %d ", other_robot_id_);
+    }
+    else
+    {
+        ROS_ERROR("Couldn't find other robot ID");
+    }
+
+    other_robot_id_char_ = other_robot_id_ + +'0';
+
+    // Extract robot id from ROS namespace
+    std::string ns = ros::this_node::getNamespace();
+
+    // Only works up to robot 9 (2 chars after that)
+    robot_id_char_ = ns.back();
+    robot_id_ = int(robot_id_char_) - '0';
+    ROS_INFO("Robot id found from namespace: %d", robot_id_);
+
+    nb_keyframes_ = 0;
+    resetPoseWithCovariance(accumulated_transform_);
+    cur_pose_ = gtsam::Pose3();
+
+    gtsam::Symbol init_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
+    poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
+}
+
+
 void resetPoseWithCovariance(PoseWithCovariance &toReset)
 {
     toReset.pose = gtsam::Pose3();
     toReset.covariance_matrix = gtsam::zeros(6, 6);
 }
 
-bool FactorGraphData::addSeparator(multi_robot_separators::ReceiveSeparators::Request &req,
+bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::Request &req,
                                    multi_robot_separators::ReceiveSeparators::Response &res)
 {
     gtsam::Matrix covariance_mat = gtsam::zeros(6, 6);
@@ -15,12 +46,8 @@ bool FactorGraphData::addSeparator(multi_robot_separators::ReceiveSeparators::Re
 
     for (int idx = 0; idx < req.matched_ids_local.size(); idx++)
     {
-
-        // TODO Change the id of other robot
-        char other_robot_id_char = 2 + '0';
         gtsam::Symbol cur_robot_symbol = gtsam::Symbol(robot_id_char_, req.matched_ids_other[idx]);
-
-        gtsam::Symbol other_robot_symbol = gtsam::Symbol(other_robot_id_char, req.matched_ids_local[idx]);
+        gtsam::Symbol other_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_local[idx]);
 
         // TODO Check that the covariance is taken with the correct order of the transform (if that actually makes any sense)
         covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
@@ -48,23 +75,6 @@ void FactorGraphData::poseCompose(const PoseWithCovariance &a,
                             Hb * b.covariance_matrix * Hb.transpose();
 }
 
-FactorGraphData::FactorGraphData()
-{
-    // Extract robot id from ROS namespace
-    std::string ns = ros::this_node::getNamespace();
-
-    // Only works up to robot 9 (2 chars after that)
-    robot_id_char_ = ns.back();
-    robot_id_ = int(robot_id_char_) - '0';
-    ROS_INFO("Robot id found from namespace: %d", robot_id_);
-
-    nb_keyframes_ = 0;
-    resetPoseWithCovariance(accumulated_transform_);
-    cur_pose_ = gtsam::Pose3();
-
-    gtsam::Symbol init_symbol = gtsam::Symbol(robot_id_char_, nb_keyframes_);
-    poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
-}
 
 void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 {
@@ -112,11 +122,13 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "factor_graph");
-    FactorGraphData factorGraphData = FactorGraphData();
     ros::NodeHandle n;
 
+    FactorGraphData factorGraphData = FactorGraphData(n);
+
+    
     ros::Subscriber sub_odom = n.subscribe("odom_info", 1000, &FactorGraphData::addOdometry, &factorGraphData);
-    ros::ServiceServer s_add_separators = n.advertiseService("add_separators_pose_graph", &FactorGraphData::addSeparator, &factorGraphData);
+    ros::ServiceServer s_add_separators = n.advertiseService("add_separators_pose_graph", &FactorGraphData::addSeparators, &factorGraphData);
     ros::spin();
 
     return 0;

@@ -28,6 +28,8 @@ private:
     gtsam::Values poses_initial_guess_;
     gtsam::Pose3 cur_pose_;
     int robot_id_;
+    int other_robot_id_;
+    unsigned char other_robot_id_char_;
     unsigned char robot_id_char_;
     int nb_keyframes_;
     PoseWithCovariance accumulated_transform_;
@@ -37,10 +39,10 @@ private:
 
 public:
     void addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg);
-    bool addSeparator(multi_robot_separators::ReceiveSeparators::Request &req,
-                      multi_robot_separators::ReceiveSeparators::Response &res);    
+    bool addSeparators(multi_robot_separators::ReceiveSeparators::Request &req,
+                      multi_robot_separators::ReceiveSeparators::Response &res);
 
-        FactorGraphData();
+    FactorGraphData(ros::NodeHandle n);
 };
 
 void resetPoseWithCovariance(PoseWithCovariance &toReset);

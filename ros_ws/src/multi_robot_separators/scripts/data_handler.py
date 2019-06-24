@@ -81,8 +81,8 @@ class DataHandler:
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
         rospy.loginfo(self.kf_already_used)
-        if len(self.kf_already_used)>0:
-            distances[np.array(self.kf_already_used)] = np.inf 
+        if len(self.kf_already_used) > 0:
+            distances[np.array(self.kf_already_used)] = np.inf
 
         indexes_smallest_values = np.argsort(distances, axis=None)
         indexes_smallest_values = np.unravel_index(
@@ -167,6 +167,15 @@ class DataHandler:
         rospy.loginfo("Reached receiving separators service")
         rospy.loginfo(receive_separators_req.matched_ids_local)
         rospy.loginfo(receive_separators_req.matched_ids_other)
+
+        # Add the separator to the factor graph
+        try:
+            s_add_seps_pose_graph = rospy.ServiceProxy(
+                'add_separators_pose_graph', ReceiveSeparators)
+            s_add_seps_pose_graph(receive_separators_req)
+        except rospy.ServiceException, e:
+            print "Service call add sep to pose graph failed: %s" % e
+
         for i in range(len(receive_separators_req.matched_ids_local)):
             rospy.loginfo(receive_separators_req.matched_ids_local[i])
             self.separators_found.append(
@@ -174,7 +183,8 @@ class DataHandler:
             rospy.loginfo(receive_separators_req.matched_ids_local[i])
             self.kf_already_used.append(
                 receive_separators_req.matched_ids_local[i])
-        rospy.loginfo("Currently found " +str(len(self.separators_found))+" separators")
+        rospy.loginfo("Currently found " +
+                      str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)
 
     def get_features(self, id):
@@ -191,7 +201,6 @@ class DataHandler:
             print "Service call failed: %s" % e
             resp_feats_and_descs = []
         return resp_feats_and_descs
-
 
     # def check_already_matched(match_id):
     #     if match_id in self.kf_already_used:
