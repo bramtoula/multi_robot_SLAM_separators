@@ -14,10 +14,10 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         ROS_ERROR("Couldn't find local robot ID");
     }
 
-    local_robot_id_char_ = local_robot_id_+ '0';
+    local_robot_id_char_ = local_robot_id_+ 'a';
 
 
-    other_robot_id_char_ = other_robot_id_ +'0';
+    other_robot_id_char_ = other_robot_id_ +'a';
     // Get other robot id
     if (n.getParam("other_robot_id", other_robot_id_))
     {
@@ -28,14 +28,14 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         ROS_ERROR("Couldn't find other robot ID");
     }
 
-    other_robot_id_char_ = other_robot_id_ + +'0';
+    other_robot_id_char_ = other_robot_id_ + +'a';
 
     // // Extract robot id from ROS namespace
     // std::string ns = ros::this_node::getNamespace();
 
     // // Only works up to robot 9 (2 chars after that)
     // robot_id_char_ = ns.back();
-    // robot_id_ = int(robot_id_char_) - '0';
+    // robot_id_ = int(robot_id_char_) - 'a';
     // ROS_INFO("Robot id found from namespace: %d", robot_id_);
 
     nb_keyframes_ = 0;
