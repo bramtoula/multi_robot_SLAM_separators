@@ -72,28 +72,40 @@ def find_separators():
                 local_features_and_desc = dataHandler.get_features(
                     res_matches.matched_id_other[i])
 
-                # Get the transformation from lowest id to higher id robot
+                ####### Code to compute transform from lowest id to higher id not used anymore. Instead compute from local robot to the robot
+                # # Get the transformation from lowest id to higher id robot
 
-                # If local id is lowest
-                if dataHandler.local_robot_id < dataHandler.other_robot_id:
-                    try:
+                # # If local id is lowest
+                # if dataHandler.local_robot_id < dataHandler.other_robot_id:
+                #     try:
 
-                        # Transform computed FROM local_features_and_desc TO res_matches (other robot)
-                        res_transform = s_ans_est_transform(
-                            local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
-                    except rospy.ServiceException, e:
-                        print "Service call failed: %s" % e
-                        continue
-                # Local id is higher
-                else:
-                    try:
-                        # Transform computed FROM local_features_and_desc TO res_matches (other robot)
-                        res_transform = s_ans_est_transform(
-                            res_matches.descriptors_vec[i], local_features_and_desc.descriptors,
-                            res_matches.kpts3D_vec[i], local_features_and_desc.kpts3D, res_matches.kpts_vec[i], local_features_and_desc.kpts)
-                    except rospy.ServiceException, e:
-                        print "Service call failed: %s" % e
-                        continue
+                #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                #         res_transform = s_ans_est_transform(
+                #             local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                #     except rospy.ServiceException, e:
+                #         print "Service call failed: %s" % e
+                #         continue
+                # # Local id is higher
+                # else:
+                #     try:
+                #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                #         res_transform = s_ans_est_transform(
+                #             res_matches.descriptors_vec[i], local_features_and_desc.descriptors,
+                #             res_matches.kpts3D_vec[i], local_features_and_desc.kpts3D, res_matches.kpts_vec[i], local_features_and_desc.kpts)
+                #     except rospy.ServiceException, e:
+                #         print "Service call failed: %s" % e
+                #         continue
+
+
+
+                try:
+
+                    # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                    res_transform = s_ans_est_transform(
+                        local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                except rospy.ServiceException, e:
+                    print "Service call failed: %s" % e
+                    continue
                 matched_ids_local_kept.append(res_matches.matched_id_other[i])
                 matched_ids_other_kept.append(res_matches.matched_id_local[i])
 

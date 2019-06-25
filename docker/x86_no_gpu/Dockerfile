@@ -24,7 +24,7 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && make install
 
 
-ARG counter1
+ARG counter2
 # Clone my repo
 RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
 
