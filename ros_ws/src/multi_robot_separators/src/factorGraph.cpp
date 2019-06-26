@@ -14,10 +14,9 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         ROS_ERROR("Couldn't find local robot ID");
     }
 
-    local_robot_id_char_ = local_robot_id_+ 'a';
+    local_robot_id_char_ = local_robot_id_ + 'a';
 
-
-    other_robot_id_char_ = other_robot_id_ +'a';
+    other_robot_id_char_ = other_robot_id_ + 'a';
     // Get other robot id
     if (n.getParam("other_robot_id", other_robot_id_))
     {
@@ -28,7 +27,7 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         ROS_ERROR("Couldn't find other robot ID");
     }
 
-    other_robot_id_char_ = other_robot_id_ + +'a';
+    other_robot_id_char_ = other_robot_id_ + 'a';
 
     // // Extract robot id from ROS namespace
     // std::string ns = ros::this_node::getNamespace();
@@ -46,6 +45,12 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
     poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
 }
 
+FactorGraphData::~FactorGraphData()
+{
+    ROS_INFO("Writing log");
+    std::string dataset_file_name = "graph_with_separators_robot_" + boost::lexical_cast<std::string>(local_robot_id_) + ".g2o";
+    gtsam::writeG2o(pose_graph_, poses_initial_guess_, dataset_file_name);
+}
 
 void resetPoseWithCovariance(PoseWithCovariance &toReset)
 {
@@ -54,7 +59,7 @@ void resetPoseWithCovariance(PoseWithCovariance &toReset)
 }
 
 bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::Request &req,
-                                   multi_robot_separators::ReceiveSeparators::Response &res)
+                                    multi_robot_separators::ReceiveSeparators::Response &res)
 {
     gtsam::Matrix covariance_mat = gtsam::zeros(6, 6);
     gtsam::Pose3 separator;
@@ -122,7 +127,6 @@ void FactorGraphData::poseCompose(const PoseWithCovariance &a,
                             Hb * b.covariance_matrix * Hb.transpose();
 }
 
-
 void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 {
     PoseWithCovariance received_transform;
@@ -154,12 +158,12 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
 
         pose_graph_.push_back(new_factor);
 
-        if(nb_keyframes_ == 30)
-        {
-            ROS_INFO("Writing log");
-            std::string dataset_file_name = "log.g2o";
-            gtsam::writeG2o(pose_graph_, poses_initial_guess_,dataset_file_name);
-        }
+        // if(nb_keyframes_ == 30)
+        // {
+        //     ROS_INFO("Writing log");
+        //     std::string dataset_file_name = "log.g2o";
+        //     gtsam::writeG2o(pose_graph_, poses_initial_guess_,dataset_file_name);
+        // }
 
         // Reset the accumulated transform to compute the one from the latest keyframe to the next one
         resetPoseWithCovariance(accumulated_transform_);
@@ -173,7 +177,6 @@ int main(int argc, char **argv)
 
     FactorGraphData factorGraphData = FactorGraphData(n);
 
-    
     ros::Subscriber sub_odom = n.subscribe("odom_info", 1000, &FactorGraphData::addOdometry, &factorGraphData);
     ros::ServiceServer s_add_separators = n.advertiseService("add_separators_pose_graph", &FactorGraphData::addSeparators, &factorGraphData);
     ros::spin();

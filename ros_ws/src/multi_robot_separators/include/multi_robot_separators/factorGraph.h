@@ -43,6 +43,7 @@ public:
                       multi_robot_separators::ReceiveSeparators::Response &res);
 
     FactorGraphData(ros::NodeHandle n);
+    ~FactorGraphData();
 };
 
 void resetPoseWithCovariance(PoseWithCovariance &toReset);
