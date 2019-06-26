@@ -31,6 +31,8 @@ def find_separators():
                      Image, dataHandler.save_image_l)
     rospy.Subscriber("right/image_rect", Image, dataHandler.save_image_r)
 
+    rospy.Subscriber("rgb/image_rect", Image, dataHandler.save_image_rgb)
+
     rospy.Subscriber("odom_info", OdomInfo, dataHandler.get_keyframes)
 
     # Initialize services

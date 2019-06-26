@@ -18,8 +18,10 @@ class DataHandler:
     def __init__(self):
         self.images_l_queue = []
         self.images_r_queue = []
+        self.images_rgb_queue = []
         self.images_l_kf = []
         self.images_r_kf = []
+        self.images_rgb_kf = []
         self.timestamps_kf = []
         self.descriptors = []
         self.separators_found = []
@@ -55,14 +57,22 @@ class DataHandler:
             print(e)
         self.images_r_queue.append((image_r.header.stamp, cv_image))
 
+
+    def save_image_rgb(self, image_rgb):
+            try:
+                cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
+            except CvBridgeError as e:
+                print(e)
+            self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
+
     def compute_descriptors(self):
         # Check if enough data to fill a batch
         # if len(self.images_l_kf) - len(self.descriptors) >= constants.BATCH_SIZE:
         rospy.loginfo("Computing descriptors. Currently already computed " +
-                      str(len(self.descriptors))+"/"+str(len(self.images_l_kf))+" frames")
+                      str(len(self.descriptors))+"/"+str(len(self.images_rgb_kf))+" frames")
         # If so, compute and store descriptors (as much as we can up to the batch size)
-        batch = self.images_l_kf[len(
-            self.descriptors):min(len(self.images_l_kf)-1, len(
+        batch = self.images_rgb_kf[len(
+            self.descriptors):min(len(self.images_rgb_kf)-1, len(
                 self.descriptors)+constants.BATCH_SIZE)]
 
         if len(batch) > 0:
@@ -104,8 +114,8 @@ class DataHandler:
         rospy.loginfo(matches)
         return matches
 
-    def get_images(self, image_id):
-        return self.image_l[image_id], self.image_r[image_id]
+    # def get_images(self, image_id):
+    #     return self.image_l[image_id], self.image_r[image_id]
 
     # def save_separator(self, transform, local_frame_id, other_robot_id, other_robot_frame_id):
     #     rospy.loginfo("Savng separator")
@@ -123,6 +133,8 @@ class DataHandler:
                     odom_info.header.stamp)
                 idx_images_r_q = [y[0] for y in self.images_r_queue].index(
                     odom_info.header.stamp)
+                idx_images_rgb_q = [y[0] for y in self.images_rgb_queue].index(
+                    odom_info.header.stamp)
             except:
                 rospy.logwarn(
                     "Keyframe timestamp not found in the saved images queue")
@@ -133,10 +145,12 @@ class DataHandler:
             # Save keyframe images
             self.images_l_kf.append(self.images_l_queue[idx_images_l_q][1])
             self.images_r_kf.append(self.images_r_queue[idx_images_r_q][1])
+            self.images_rgb_kf.append(self.images_rgb_queue[idx_images_rgb_q][1])
 
             # Remove previous timestamps in the queues
             del self.images_l_queue[:idx_images_l_q]
             del self.images_r_queue[:idx_images_r_q]
+            del self.images_rgb_queue[:idx_images_rgb_q]
 
     def find_matches_service(self, find_matches_req):
 
