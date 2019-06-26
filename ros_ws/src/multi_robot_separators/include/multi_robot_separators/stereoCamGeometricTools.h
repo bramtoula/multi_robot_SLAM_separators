@@ -8,11 +8,12 @@
 #include "rtabmap/core/SensorData.h"
 #include <opencv2/core/core.hpp>
 #include "multi_robot_separators/myRegistration.h"
+
+#include "sensor_msgs/CameraInfo.h"
 using namespace rtabmap;
 class StereoCamGeometricTools
 {
 private:
-    /* data */
     StereoCameraModel cam;
     Registration *_registrationPipeline;
     RegistrationInfo info;
@@ -23,6 +24,6 @@ private:
                                           multi_robot_separators::GetFeatsAndDesc::Response &res);
     bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
                                 multi_robot_separators::EstTransform::Response &res);
-    StereoCamGeometricTools(const cv::Mat &P_lt, const cv::Mat &P_rt, const cv::Size imageSizet);
+    StereoCamGeometricTools(sensor_msgs::CameraInfo &camera_info_l, sensor_msgs::CameraInfo &camera_info_r);
     // void ~StereoCamGeometricTools();
 };

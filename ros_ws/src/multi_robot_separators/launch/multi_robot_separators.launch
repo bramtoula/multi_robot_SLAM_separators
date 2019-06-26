@@ -8,7 +8,9 @@
     <param name="local_robot_id" type="int" value="1" />
     <param name="other_robot_id" type="int" value="1" />
 
-    <rosparam command="load" file="$(find multi_robot_separators)/cfg/stereo_cam_tools_params.yaml" />
+    <remap from="left/camera_info" to="/kitti/camera_color_left/camera_info"/>
+    <remap from="right/camera_info" to="/kitti/camera_color_right/camera_info"/>
+    <remap from="rgb/image_rect" to="/kitti/camera_color_left/image_rect"/>
     <remap from="left/image_rect" to="/kitti/camera_color_left/image_rect"/>
     <remap from="right/image_rect" to="/kitti/camera_color_right/image_rect"/>
     <remap from="left/camera_info" to="/kitti/camera_color_left/camera_info"/>

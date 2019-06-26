@@ -2,15 +2,91 @@
 
 using namespace rtabmap;
 
-StereoCamGeometricTools::StereoCamGeometricTools(const cv::Mat &P_l, const cv::Mat &P_r, const cv::Size imageSize)
+void _PrintMatrix(char *pMessage, cv::Mat &mat)
+{
+    printf("%s\n", pMessage);
+
+    for (int r = 0; r < mat.rows; r++)
+    {
+        for (int c = 0; c < mat.cols; c++)
+        {
+
+            switch (mat.depth())
+            {
+            case CV_8U:
+            {
+                printf("%*u ", 3, mat.at<uchar>(r, c));
+                break;
+            }
+            case CV_8S:
+            {
+                printf("%*hhd ", 4, mat.at<schar>(r, c));
+                break;
+            }
+            case CV_16U:
+            {
+                printf("%*hu ", 5, mat.at<ushort>(r, c));
+                break;
+            }
+            case CV_16S:
+            {
+                printf("%*hd ", 6, mat.at<short>(r, c));
+                break;
+            }
+            case CV_32S:
+            {
+                printf("%*d ", 6, mat.at<int>(r, c));
+                break;
+            }
+            case CV_32F:
+            {
+                printf("%*.4f ", 10, mat.at<float>(r, c));
+                break;
+            }
+            case CV_64F:
+            {
+                printf("%*.4f ", 10, mat.at<double>(r, c));
+                break;
+            }
+            }
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+StereoCamGeometricTools::StereoCamGeometricTools(sensor_msgs::CameraInfo &camera_info_l, sensor_msgs::CameraInfo &camera_info_r)
 {
     ULogger::setType(ULogger::kTypeConsole);
     ULogger::setLevel(ULogger::kDebug);
-    
+
+    cv::Size image_size_l(camera_info_l.width, camera_info_l.height);
+
+    cv::Mat D_l = cv::Mat::zeros(1, 5, CV_64F);
+    if (camera_info_l.D.size())
+    {
+        cv::Mat D_l(1, camera_info_l.D.size(), CV_64F, &camera_info_l.D[0]);
+    }
+    cv::Mat K_l(3, 3, CV_64F, &camera_info_l.K[0]);
+    cv::Mat R_l(3, 3, CV_64F, &camera_info_l.R[0]);
+    cv::Mat P_l(3, 4, CV_64F, &camera_info_l.P[0]);
+    cv::Size image_size_r(camera_info_r.width, camera_info_r.height);
+
+
+    cv::Mat D_r = cv::Mat::zeros(1, 5, CV_64F);
+    if (camera_info_r.D.size())
+    {
+        cv::Mat D_r(1, camera_info_r.D.size(), CV_64F, &camera_info_r.D[0]);
+    }
+    cv::Mat K_r(3, 3, CV_64F, &camera_info_r.K[0]);
+    cv::Mat R_r(3, 3, CV_64F, &camera_info_r.R[0]);
+    cv::Mat P_r(3, 4, CV_64F, &camera_info_r.P[0]);
+
     cam = StereoCameraModel("stereo_calib",
-                            imageSize, P_l.colRange(0, 3), cv::Mat(), cv::Mat(), P_l,
-                            imageSize, P_r.colRange(0, 3), cv::Mat(), cv::Mat(), P_r,
+                            image_size_l, K_l, D_l, R_l, P_l,
+                            image_size_r, K_r, D_r, R_r, P_r,
                             cv::Mat(), cv::Mat(), cv::Mat(), cv::Mat());
+                            
     ParametersMap params;
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpCorrespondenceRatio(), "0.1"));
     params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpIterations(), "10"));
@@ -107,61 +183,16 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "stereo_cam_geometric_tools_node");
     ros::NodeHandle n;
 
-    // Get params
-    std::vector<double> P_l_param;
-    std::vector<double> P_r_param;
-    int img_height, img_width;
-    if (!n.getParam("image_size/height", img_height))
-    {
-        ROS_ERROR_STREAM("Height could not be read.");
-        return 0;
-    }
-    if (!n.getParam("image_size/width", img_width))
-    {
-        ROS_ERROR_STREAM("Width could not be read.");
-        return 0;
-    }
-    if (!n.getParam("P_l", P_l_param))
-    {
-        ROS_ERROR_STREAM("Left projection matrix could not be read.");
-        return 0;
-    }
 
-    if (!n.getParam("P_r", P_r_param))
-    {
-        ROS_ERROR_STREAM("Right projection matrix could not be read.");
-        return 0;
-    }
-    cv::Mat P_l ;
-    if (P_l_param.size() == 12) // check that the rows and cols match the size of your vector
-    {
-        P_l = cv::Mat(P_l_param);
-        P_l = P_l.reshape(1,3);
-    }
-    else
-    {
-        ROS_ERROR_STREAM("Wrong dimensions of the left calibration matrix");
-        return 0;
-    }
+    sensor_msgs::CameraInfoConstPtr camera_info_l_cst_ptr = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("left/camera_info", n);
+    sensor_msgs::CameraInfoConstPtr camera_info_r_cst_ptr = ros::topic::waitForMessage<sensor_msgs::CameraInfo>("right/camera_info", n);
+    sensor_msgs::CameraInfo camera_info_l = *camera_info_l_cst_ptr;
+    sensor_msgs::CameraInfo camera_info_r = *camera_info_r_cst_ptr;
 
-    cv::Mat P_r ;
-    if (P_r_param.size() == 12)
-    {
-        P_r = cv::Mat(P_r_param);
-        P_r = P_r.reshape(1, 3);
-    }
-    else
-    {
-        ROS_ERROR_STREAM("Wrong dimensions of the left calibration matrix");
-        return 0;
-    }
-
-    cv::Size imageSize(img_width,img_height);
-
-    StereoCamGeometricTools stereoCamGeometricToolsNode = StereoCamGeometricTools(P_l,P_r,imageSize);
+    StereoCamGeometricTools stereoCamGeometricToolsNode = StereoCamGeometricTools(camera_info_l, camera_info_r);
     ros::ServiceServer service_feats = n.advertiseService("get_features_and_descriptor", &StereoCamGeometricTools::getFeaturesAndDescriptor, &stereoCamGeometricToolsNode);
     ros::ServiceServer service_transf = n.advertiseService("estimate_transformation", &StereoCamGeometricTools::estimateTransformation, &stereoCamGeometricToolsNode);
-    ROS_INFO("Ready to do stuff.");
+    ROS_INFO("Stereo camera geometric tools ready");
     ros::spin();
 
     return 0;
