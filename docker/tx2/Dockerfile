@@ -48,7 +48,7 @@ RUN pip install /tmp/tensorflow-1.11.0-cp27-cp27mu-linux_aarch64.whl && \
 WORKDIR /root/
 
 # Some tools
-RUN apt-get update && apt-get install -y libopenni2-dev wget vim unzip \
+RUN apt-get update && apt-get install -y libopenni2-dev wget vim unzip net-tools htop\
     # Python catkin tools
     && sh -c 'echo "deb http://packages.ros.org/ros/ubuntu `lsb_release -sc` main" > /etc/apt/sources.list.d/ros-latest.list' \
     && wget http://packages.ros.org/ros.key -O - | apt-key add - \
@@ -65,18 +65,28 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && make -j4 \
     && make install
 
+# Download resources needed later for netvlad
+RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
+    wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
+    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \ 
+    wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
+
 # Clone my repo
 RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
 
+ARG reset_clone0
+
 RUN cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && \
-    git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
+    mv ~/netvlad_tf_open . && \
     cd netvlad_tf_open && \
-    apt-get install -y wget unzip && \
-    wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    mv vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \
+    mv ~/vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \
     cd matlab && \
-    wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
+    mv ~/example_stats.mat . && \
+    cd ~/multi_robot_SLAM_separators/ros_ws && \
+    source /opt/ros/melodic/setup.bash && \
+    catkin build && \
+    source devel/setup.bash
+
 
 RUN chmod +x multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts/find_separators.py
 
