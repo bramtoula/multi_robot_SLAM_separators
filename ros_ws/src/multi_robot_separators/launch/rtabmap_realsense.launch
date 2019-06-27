@@ -1,0 +1,10 @@
+<launch>
+  <group ns="robot_1">
+    <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 base_link camera_color_left" />
+    <remap from="left/image_rect" to="/camera/infra1/image_rect_raw"/>
+    <remap from="right/image_rect" to="/camera/infra2/image_rect_raw"/>
+    <remap from="left/camera_info" to="/camera/infra1/camera_info"/>
+    <remap from="right/camera_info" to="/camera/infra2/camera_info"/>
+    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry"/>
+  </group>
+</launch>

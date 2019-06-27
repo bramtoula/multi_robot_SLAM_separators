@@ -13,7 +13,7 @@
 
     <!-- Don't forger to change the robot ID in the name space! -->
     <param name="local_robot_id" type="int" value="1" />
-    <param name="other_robot_id" type="int" value="1" />
+    <param name="other_robot_id" type="int" value="2" />
 
     <remap from="left/camera_info" to="kitti/camera_color_left/camera_info"/>
     <remap from="right/camera_info" to="kitti/camera_color_right/camera_info"/>
