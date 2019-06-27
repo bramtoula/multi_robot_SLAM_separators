@@ -1,7 +1,7 @@
 <launch>
 
 <!-- Play the bag within the namespace -->
-<node pkg="rosbag" type="play" name="playback" args="/kitti_data">
+<node pkg="rosbag" type="play" name="playback" args="/kitti_data_orig/kitti_data_odometry_color_sequence_00_part1.bag">
   <remap from="/kitti/camera_color_left/image_rect" to="/robot_1/kitti/camera_color_left/image_rect"/>
   <remap from="/kitti/camera_color_right/image_rect" to="/robot_1/kitti/camera_color_right/image_rect"/>
   <remap from="/kitti/camera_color_left/camera_info" to="/robot_1/kitti/camera_color_left/camera_info"/>
@@ -27,6 +27,28 @@
     <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/>
     <node pkg="multi_robot_separators" type="communication" name="communication"/>
     <node pkg="tf2_ros" type="static_transform_publisher" name="link1_broadcaster" args="0 0 0 0 0 0 base_link camera_color_left" />
-    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry"/>
+
+    <!-- Stereo Odometry -->   
+    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen">
+        <param name="Odom/Strategy"      type="string" value="1"/> <!-- 0=Frame-to-Map, 1=Frame=to=Frame -->
+        <param name="Odom/ImageBufferSize"  type="string" value="0"/> 
+        <param name="Vis/EstimationType" type="string" value="1"/> <!-- 0=3D->3D 1=3D->2D (PnP) -->
+        <param name="Vis/PnPFlags"       type="string" value="0"/>
+        <param name="Vis/PnPReprojError"     type="string" value="1"/>
+        <param name="Vis/CorFlowWinSize"     type="string" value="15"/>
+        <param name="Vis/CorType"     type="string" value="1"/>
+        <param name="GFTT/MinDistance"   type="string" value="10"/>
+        <param name="GFTT/QualityLevel"  type="string" value="0.002"/> 
+        <param name="Icp/CorrespondenceRatio"  type="string" value="0.1"/> 
+        <param name="Icp/Iterations"  type="string" value="10"/> 
+        <param name="Icp/MaxCorrespondenceDistance"  type="string" value="0.3"/> 
+        <param name="Icp/PointToPlane"  type="string" value="true"/> 
+        <param name="Icp/MaxTranslation"  type="string" value="0"/> 
+        <param name="Icp/VoxelSize"  type="string" value="0"/> 
+        <param name="Icp/Epsilon"  type="string" value="0.01"/> 
+        <param name="Reg/Strategy"  type="string" value="0"/> 
+    </node>
+
+
   </group>
 </launch>

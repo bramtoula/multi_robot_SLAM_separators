@@ -99,9 +99,9 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
         // Case where the robot is receiving the separator computed by another robot
         else
         {
-            // local robot goes with matched other since message comes from the sending robot
-            receiving_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
-            sending_robot_symbol = gtsam::Symbol(sending_robot_id_char_, req.matched_ids_local[idx]);
+            // local robot goes with matched local since it computed the matches
+            receiving_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_local[idx]);
+            sending_robot_symbol = gtsam::Symbol(sending_robot_id_char_, req.matched_ids_other[idx]);
         }
         covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
 

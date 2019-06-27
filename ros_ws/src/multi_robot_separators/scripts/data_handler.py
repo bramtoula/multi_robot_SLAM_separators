@@ -163,7 +163,10 @@ class DataHandler:
         kpts_vec = []
 
         # Find closest descriptors
-        matches = self.find_matches(descriptors_to_comp)
+        if (len(descriptors_to_comp) > 0) and (len(self.descriptors) > 0):
+            matches = self.find_matches(descriptors_to_comp)
+        else:
+            return FindMatchesResponse([], [], [], [], [])
 
         matches_local_resp = []
         matches_other_resp = []

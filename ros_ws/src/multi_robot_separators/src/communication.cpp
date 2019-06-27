@@ -65,7 +65,7 @@ bool Communicater::find_matches_query(multi_robot_separators::FindMatches::Reque
     }
     else
     {
-        ROS_ERROR("Failed to call find_matches_answer service");
+        ROS_WARN("Failed to call find_matches_answer service, maybe the robot isn't available");
         return 1;
     }
     return true;
