@@ -1,5 +1,12 @@
 <launch>
 
+<!-- Play the bag within the namespace -->
+<node pkg="rosbag" type="play" name="playback" args="/kitti_data">
+  <remap from="/kitti/camera_color_left/image_rect" to="/robot_1/kitti/camera_color_left/image_rect"/>
+  <remap from="/kitti/camera_color_right/image_rect" to="/robot_1/kitti/camera_color_right/image_rect"/>
+  <remap from="/kitti/camera_color_left/camera_info" to="/robot_1/kitti/camera_color_left/camera_info"/>
+  <remap from="/kitti/camera_color_right/camera_info" to="/robot_1/kitti/camera_color_right/camera_info"/>
+</node>
 
 <!-- Change the robot id here too! -->
   <group ns="robot_1">
@@ -8,13 +15,13 @@
     <param name="local_robot_id" type="int" value="1" />
     <param name="other_robot_id" type="int" value="1" />
 
-    <remap from="left/camera_info" to="/kitti/camera_color_left/camera_info"/>
-    <remap from="right/camera_info" to="/kitti/camera_color_right/camera_info"/>
-    <remap from="rgb/image_rect" to="/kitti/camera_color_left/image_rect"/>
-    <remap from="left/image_rect" to="/kitti/camera_color_left/image_rect"/>
-    <remap from="right/image_rect" to="/kitti/camera_color_right/image_rect"/>
-    <remap from="left/camera_info" to="/kitti/camera_color_left/camera_info"/>
-    <remap from="right/camera_info" to="/kitti/camera_color_right/camera_info"/>
+    <remap from="left/camera_info" to="kitti/camera_color_left/camera_info"/>
+    <remap from="right/camera_info" to="kitti/camera_color_right/camera_info"/>
+    <remap from="rgb/image_rect" to="kitti/camera_color_left/image_rect"/>
+    <remap from="left/image_rect" to="kitti/camera_color_left/image_rect"/>
+    <remap from="right/image_rect" to="kitti/camera_color_right/image_rect"/>
+    <remap from="left/camera_info" to="kitti/camera_color_left/camera_info"/>
+    <remap from="right/camera_info" to="kitti/camera_color_right/camera_info"/>
     <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools"/>
     <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators"/>
     <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/>

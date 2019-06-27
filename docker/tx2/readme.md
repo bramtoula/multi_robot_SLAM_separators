@@ -7,7 +7,7 @@ Make sure you can use [Tegra Docker](https://github.com/Technica-Corporation/Teg
 On the TX2 itself, you need to install some libraries (so that they are available through the shared folders when running the Tegra Docker wrapper):
 ```
 sudo apt-get update
-sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfreenect-dev libdc1394-22-dev libglvnd-dev libopencv-contrib3.2
+sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfreenect-dev libdc1394-22-dev libglvnd-dev libopencv-contrib3.2 libmetis-dev libboost-all-dev libpcl-dev liblz4-dev libogre-1.9-dev liburdfdom-dev liblog4cxx-dev libtinyxml2-dev libassimp4 libyaml-cpp0.5v5
 ```
 
 There is also the need for some other libopencv packages, but I'm not sure if the best way is to copy them directly in the container, or figure out how to install them through the package manager yet...

@@ -24,7 +24,7 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && make install
 
 
-ARG counter2
+ARG reclone_repo_0
 # Clone my repo
 RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
 
@@ -33,7 +33,6 @@ RUN cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && 
     cd netvlad_tf_open && \
     apt-get install -y wget unzip && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    mkdir checkpoints && \
     unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
     mv vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \
     cd matlab && \

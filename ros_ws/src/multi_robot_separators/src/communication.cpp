@@ -27,7 +27,7 @@ bool Communicater::found_separators_send(multi_robot_separators::ReceiveSeparato
     }
     else
     {
-        ROS_ERROR("Failed to call find_matches_answer service");
+        ROS_ERROR("Failed to call found_separators_receive service");
         return 1;
     }
     return true;
@@ -45,7 +45,7 @@ bool Communicater::found_separators_receive(multi_robot_separators::ReceiveSepar
     }
     else
     {
-        ROS_ERROR("Failed to call find_matches_compute service");
+        ROS_ERROR("Failed to call receive_separators_py service");
         return 1;
     }
     return true;
