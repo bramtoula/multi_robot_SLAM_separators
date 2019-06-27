@@ -71,9 +71,8 @@ class DataHandler:
         rospy.loginfo("Computing descriptors. Currently already computed " +
                       str(len(self.descriptors))+"/"+str(len(self.images_rgb_kf))+" frames")
         # If so, compute and store descriptors (as much as we can up to the batch size)
-        batch = self.images_rgb_kf[len(
-            self.descriptors):min(len(self.images_rgb_kf)-1, len(
-                self.descriptors)+constants.BATCH_SIZE)]
+        nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
+        batch = self.images_rgb_kf[:nb_images_batch]
 
         if len(batch) > 0:
             descriptors = self.sess.run(self.net_out, feed_dict={
@@ -82,6 +81,9 @@ class DataHandler:
             rospy.loginfo("Saving descriptors")
             self.descriptors.extend(
                 descriptors[:, :constants.NETVLAD_DIMS].tolist())
+
+            # Remove rgb images from memory
+            self.images_rgb_kf = self.images_rgb_kf[nb_images_batch:]
         else:
             rospy.loginfo("Empty batch, no images to compute descriptors for")
 
