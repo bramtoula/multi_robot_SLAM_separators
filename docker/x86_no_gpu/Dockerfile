@@ -23,20 +23,25 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && make -j4 \
     && make install
 
-
-ARG reclone_repo_0
-# Clone my repo
-RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
-
-RUN cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && \
-    git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
-    cd netvlad_tf_open && \
-    apt-get install -y wget unzip && \
+# Download resources needed later for netvlad
+RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    mv vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \
-    cd matlab && \
+    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \ 
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
+
+ARG reset_clone0
+
+RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git  && \
+    cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && \
+    mv ~/netvlad_tf_open . && \
+    cd netvlad_tf_open && \
+    mv ~/vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \
+    cd matlab && \
+    mv ~/example_stats.mat . && \
+    cd ~/multi_robot_SLAM_separators/ros_ws && \
+    source /opt/ros/melodic/setup.bash && \
+    catkin build && \
+    source devel/setup.bash
 
 RUN chmod +x multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts/find_separators.py
 

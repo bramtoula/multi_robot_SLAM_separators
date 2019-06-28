@@ -72,11 +72,10 @@ RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
 
 # Clone my repo
-RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git 
-
 ARG reset_clone0
 
-RUN cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && \
+RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git  && \
+    cd multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts && \
     mv ~/netvlad_tf_open . && \
     cd netvlad_tf_open && \
     mv ~/vd16_pitts30k_conv5_3_vlad_preL2_intra_white/* checkpoints && \

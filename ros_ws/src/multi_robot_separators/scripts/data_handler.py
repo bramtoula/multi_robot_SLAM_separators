@@ -19,8 +19,7 @@ class DataHandler:
         self.images_l_queue = []
         self.images_r_queue = []
         self.images_rgb_queue = []
-        self.images_l_kf = []
-        self.images_r_kf = []
+        self.geometric_feats = []
         self.images_rgb_kf = []
         self.timestamps_kf = []
         self.descriptors = []
@@ -57,19 +56,18 @@ class DataHandler:
             print(e)
         self.images_r_queue.append((image_r.header.stamp, cv_image))
 
-
     def save_image_rgb(self, image_rgb):
-            try:
-                cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
-            except CvBridgeError as e:
-                print(e)
-            self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
+        except CvBridgeError as e:
+            print(e)
+        self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
 
     def compute_descriptors(self):
         # Check if enough data to fill a batch
         # if len(self.images_l_kf) - len(self.descriptors) >= constants.BATCH_SIZE:
         rospy.loginfo("Computing descriptors. Currently already computed " +
-                      str(len(self.descriptors))+"/"+str(len(self.images_rgb_kf))+" frames")
+                      str(len(self.descriptors))+"/ Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
         # If so, compute and store descriptors (as much as we can up to the batch size)
         nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
         batch = self.images_rgb_kf[:nb_images_batch]
@@ -144,10 +142,11 @@ class DataHandler:
 
             rospy.loginfo("Adding a keyframe and cleaning queue")
             self.timestamps_kf.append(odom_info.header.stamp)
-            # Save keyframe images
-            self.images_l_kf.append(self.images_l_queue[idx_images_l_q][1])
-            self.images_r_kf.append(self.images_r_queue[idx_images_r_q][1])
-            self.images_rgb_kf.append(self.images_rgb_queue[idx_images_rgb_q][1])
+            # Save geometric features and descs of keyframe images
+            self.geometric_feats.append(self.compute_geom_features(
+                self.images_l_queue[idx_images_l_q][1], self.images_r_queue[idx_images_r_q][1]))
+            self.images_rgb_kf.append(
+                self.images_rgb_queue[idx_images_rgb_q][1])
 
             # Remove previous timestamps in the queues
             del self.images_l_queue[:idx_images_l_q]
@@ -174,7 +173,7 @@ class DataHandler:
         matches_other_resp = []
         # Find corresponding visual keypoints and descriptors
         for match in matches:
-            resp_feats_and_descs = self.get_features(match[0])
+            resp_feats_and_descs = self.get_geom_features(match[0])
 
             if not resp_feats_and_descs:
                 continue
@@ -209,9 +208,12 @@ class DataHandler:
                       str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)
 
-    def get_features(self, id):
-        img_l = cv2.cvtColor(self.images_l_kf[id], cv2.COLOR_RGB2GRAY)
-        img_r = cv2.cvtColor(self.images_r_kf[id], cv2.COLOR_RGB2GRAY)
+    def get_geom_features(self, id):
+        return self.geometric_feats[id]
+
+    def compute_geom_features(self, image_l, image_r):
+        img_l = cv2.cvtColor(image_l, cv2.COLOR_RGB2GRAY)
+        img_r = cv2.cvtColor(image_r, cv2.COLOR_RGB2GRAY)
         img_l_msg = self.bridge.cv2_to_imgmsg(img_l, encoding="mono8")
         img_r_msg = self.bridge.cv2_to_imgmsg(img_r, encoding="mono8")
 
@@ -230,16 +232,16 @@ class DataHandler:
     #     else:
     #         return False
 
-    def change_var_order_cov(self,separator_poseWithCov):
-        cov_t_first = np.asarray(separator_poseWithCov.covariance).reshape((6,6))
-        cov_r_first = np.zeros((6,6))
-        
+    def change_var_order_cov(self, separator_poseWithCov):
+        cov_t_first = np.asarray(
+            separator_poseWithCov.covariance).reshape((6, 6))
+        cov_r_first = np.zeros((6, 6))
+
         separator_corr = separator_poseWithCov
         cov_r_first[:3, :3] = cov_t_first[3:, 3:]
-        cov_r_first[3:,3:] = cov_t_first[:3, :3]
-        cov_r_first[3:,:3] = cov_t_first[:3, 3:]
-        cov_r_first[:3,3:] = cov_t_first[3:, :3]
+        cov_r_first[3:, 3:] = cov_t_first[:3, :3]
+        cov_r_first[3:, :3] = cov_t_first[:3, 3:]
+        cov_r_first[:3, 3:] = cov_t_first[3:, :3]
 
-        
         separator_corr.covariance = tuple(cov_r_first.flatten())
         return separator_corr
