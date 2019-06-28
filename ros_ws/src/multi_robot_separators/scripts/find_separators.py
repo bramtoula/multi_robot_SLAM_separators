@@ -71,7 +71,7 @@ def find_separators():
             # If matches are found, compute the separators, send them back, and add them to the pose graph
             for i in range(len(res_matches.matched_id_other)):
                 # Compute geometric features of the local frames that were matched. Use matched_id_other since it is from the point of view of the other robot.
-                local_features_and_desc = dataHandler.get_features(
+                local_features_and_desc = dataHandler.get_geom_features(
                     res_matches.matched_id_other[i])
 
                 ####### Code to compute transform from lowest id to higher id not used anymore. Instead compute from local robot to the robot
