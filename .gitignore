@@ -2,3 +2,4 @@
 *vscode
 *.png
 *__pycache__
+*experiments*
