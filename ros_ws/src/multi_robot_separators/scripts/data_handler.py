@@ -25,6 +25,7 @@ class DataHandler:
         self.descriptors = []
         self.separators_found = []
         self.kf_already_used = []
+        self.nb_kf_skipped = 0
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -67,7 +68,7 @@ class DataHandler:
         # Check if enough data to fill a batch
         # if len(self.images_l_kf) - len(self.descriptors) >= constants.BATCH_SIZE:
         rospy.loginfo("Computing descriptors. Currently already computed " +
-                      str(len(self.descriptors))+"/ Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
+                      str(len(self.descriptors))+" netvlad descriptors. Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
         # If so, compute and store descriptors (as much as we can up to the batch size)
         nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
         batch = self.images_rgb_kf[:nb_images_batch]
@@ -126,32 +127,37 @@ class DataHandler:
 
     def get_keyframes(self, odom_info):
         if odom_info.keyFrameAdded:
+            if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
+                self.nb_kf_skipped += 1
+            else:
+                # Look for the index of the saved image corresponding to the timestamp
+                try:
+                    idx_images_l_q = [y[0] for y in self.images_l_queue].index(
+                        odom_info.header.stamp)
+                    idx_images_r_q = [y[0] for y in self.images_r_queue].index(
+                        odom_info.header.stamp)
+                    idx_images_rgb_q = [y[0] for y in self.images_rgb_queue].index(
+                        odom_info.header.stamp)
+                except:
+                    rospy.logwarn(
+                        "Keyframe timestamp not found in the saved images queue")
+                    return
 
-            # Look for the index of the saved image corresponding to the timestamp
-            try:
-                idx_images_l_q = [y[0] for y in self.images_l_queue].index(
-                    odom_info.header.stamp)
-                idx_images_r_q = [y[0] for y in self.images_r_queue].index(
-                    odom_info.header.stamp)
-                idx_images_rgb_q = [y[0] for y in self.images_rgb_queue].index(
-                    odom_info.header.stamp)
-            except:
-                rospy.logwarn(
-                    "Keyframe timestamp not found in the saved images queue")
-                return
+                rospy.loginfo("Adding a keyframe and cleaning queue")
+                self.timestamps_kf.append(odom_info.header.stamp)
+                # Save geometric features and descs of keyframe images
+                self.geometric_feats.append(self.compute_geom_features(
+                    self.images_l_queue[idx_images_l_q][1], self.images_r_queue[idx_images_r_q][1]))
+                self.images_rgb_kf.append(
+                    self.images_rgb_queue[idx_images_rgb_q][1])
 
-            rospy.loginfo("Adding a keyframe and cleaning queue")
-            self.timestamps_kf.append(odom_info.header.stamp)
-            # Save geometric features and descs of keyframe images
-            self.geometric_feats.append(self.compute_geom_features(
-                self.images_l_queue[idx_images_l_q][1], self.images_r_queue[idx_images_r_q][1]))
-            self.images_rgb_kf.append(
-                self.images_rgb_queue[idx_images_rgb_q][1])
+                # Remove previous timestamps in the queues
+                del self.images_l_queue[:idx_images_l_q]
+                del self.images_r_queue[:idx_images_r_q]
+                del self.images_rgb_queue[:idx_images_rgb_q]
 
-            # Remove previous timestamps in the queues
-            del self.images_l_queue[:idx_images_l_q]
-            del self.images_r_queue[:idx_images_r_q]
-            del self.images_rgb_queue[:idx_images_rgb_q]
+                # Reset the counter of KF skipped
+                self.nb_kf_skipped = 0
 
     def find_matches_service(self, find_matches_req):
 
