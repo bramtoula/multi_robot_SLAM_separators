@@ -69,7 +69,7 @@ class DataHandler:
         # Check if enough data to fill a batch
         # if len(self.images_l_kf) - len(self.descriptors) >= constants.BATCH_SIZE:
         rospy.loginfo("Computing descriptors. Currently already computed " +
-                      str(len(self.descriptors))+"/"+str(len(self.images_rgb_kf))+" frames")
+                      str(len(self.descriptors))+"/ Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
         # If so, compute and store descriptors (as much as we can up to the batch size)
         nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
         batch = self.images_rgb_kf[:nb_images_batch]
