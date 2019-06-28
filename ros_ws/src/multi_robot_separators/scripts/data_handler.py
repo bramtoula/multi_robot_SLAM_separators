@@ -48,6 +48,7 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_l, "rgb8")
         except CvBridgeError as e:
             print(e)
+        rospy.loginfo("Adding L image the queue. Queue now has "+str(len( self.images_l_queue))+"images.")
         self.images_l_queue.append((image_l.header.stamp, cv_image))
 
     def save_image_r(self, image_r):
@@ -55,6 +56,7 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_r, "rgb8")
         except CvBridgeError as e:
             print(e)
+        rospy.loginfo("Adding R image the queue. Queue now has "+str(len( self.images_r_queue))+"images.")
         self.images_r_queue.append((image_r.header.stamp, cv_image))
 
     def save_image_rgb(self, image_rgb):
@@ -62,6 +64,7 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
         except CvBridgeError as e:
             print(e)
+        rospy.loginfo("Adding RGB image the queue. Queue now has "+str(len( self.images_rgb_queue))+"images.")
         self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
 
     def compute_descriptors(self):
