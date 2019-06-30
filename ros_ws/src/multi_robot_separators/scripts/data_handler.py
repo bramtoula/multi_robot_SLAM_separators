@@ -48,7 +48,6 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_l, "rgb8")
         except CvBridgeError as e:
             print(e)
-        rospy.loginfo("Adding L image the queue. Queue now has "+str(len( self.images_l_queue))+"images.")
         self.images_l_queue.append((image_l.header.stamp, cv_image))
 
     def save_image_r(self, image_r):
@@ -56,7 +55,6 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_r, "rgb8")
         except CvBridgeError as e:
             print(e)
-        rospy.loginfo("Adding R image the queue. Queue now has "+str(len( self.images_r_queue))+"images.")
         self.images_r_queue.append((image_r.header.stamp, cv_image))
 
     def save_image_rgb(self, image_rgb):
@@ -64,7 +62,6 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
         except CvBridgeError as e:
             print(e)
-        rospy.loginfo("Adding RGB image the queue. Queue now has "+str(len( self.images_rgb_queue))+"images.")
         self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
 
     def compute_descriptors(self):
@@ -97,6 +94,7 @@ class DataHandler:
 
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
+        rospy.loginfo("distances"+str(len(distances))+" "+str(len(distances[0])))
         rospy.loginfo(self.kf_already_used)
         if len(self.kf_already_used) > 0:
             distances[np.array(self.kf_already_used)] = np.inf
@@ -129,6 +127,7 @@ class DataHandler:
     #     self.kf_already_used.append(local_frame_id)
 
     def get_keyframes(self, odom_info):
+        rospy.loginfo("Size of images queue: "+str(len(self.images_l_queue)+"\n"))
         if odom_info.keyFrameAdded:
             if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
                 self.nb_kf_skipped += 1

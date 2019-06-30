@@ -84,7 +84,8 @@ RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git  && \
     cd ~/multi_robot_SLAM_separators/ros_ws && \
     source /opt/ros/melodic/setup.bash && \
     catkin build && \
-    source devel/setup.bash
+    source devel/setup.bash && \
+    mkdir ~/multi_robot_SLAM_separators/logs
 
 
 RUN chmod +x multi_robot_SLAM_separators/ros_ws/src/multi_robot_separators/scripts/find_separators.py
