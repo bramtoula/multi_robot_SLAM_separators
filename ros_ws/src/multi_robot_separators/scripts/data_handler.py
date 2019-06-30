@@ -49,6 +49,8 @@ class DataHandler:
         except CvBridgeError as e:
             print(e)
         self.images_l_queue.append((image_l.header.stamp, cv_image))
+        if len(self.images_l_queue) > constants.MAX_QUEUE_SIZE:
+            self.images_l_queue.pop(0)
 
     def save_image_r(self, image_r):
         try:
@@ -56,6 +58,8 @@ class DataHandler:
         except CvBridgeError as e:
             print(e)
         self.images_r_queue.append((image_r.header.stamp, cv_image))
+        if len(self.images_r_queue) > constants.MAX_QUEUE_SIZE:
+            self.images_r_queue.pop(0)
 
     def save_image_rgb(self, image_rgb):
         try:
@@ -63,6 +67,8 @@ class DataHandler:
         except CvBridgeError as e:
             print(e)
         self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
+        if len(self.images_rgb_queue) > constants.MAX_QUEUE_SIZE:
+            self.images_rgb_queue.pop(0)
 
     def compute_descriptors(self):
         # Check if enough data to fill a batch
@@ -127,7 +133,7 @@ class DataHandler:
     #     self.kf_already_used.append(local_frame_id)
 
     def get_keyframes(self, odom_info):
-        rospy.loginfo("Size of images queue: "+str(len(self.images_l_queue)+"\n"))
+        rospy.loginfo("Size of images queue: "+str(len(self.images_l_queue))+"\n")
         if odom_info.keyFrameAdded:
             if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
                 self.nb_kf_skipped += 1
