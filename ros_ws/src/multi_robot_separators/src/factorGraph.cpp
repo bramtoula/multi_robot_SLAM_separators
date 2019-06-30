@@ -43,12 +43,16 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
 
     gtsam::Symbol init_symbol = gtsam::Symbol(local_robot_id_char_, nb_keyframes_);
     poses_initial_guess_.insert(init_symbol.key(), cur_pose_);
+
+    // Delete existent log files
+    std::string log_file_name = "log/dataset/graph_with_separators_robot_" + boost::lexical_cast<std::string>(local_robot_id_) + ".g2o";
+    std::remove(log_file_name.c_str());
 }
 
 FactorGraphData::~FactorGraphData()
 {
     ROS_INFO("Writing log");
-    std::string dataset_file_name = "graph_with_separators_robot_" + boost::lexical_cast<std::string>(local_robot_id_) + ".g2o";
+    std::string dataset_file_name = "log/dataset/graph_with_separators_robot_" + boost::lexical_cast<std::string>(local_robot_id_) + ".g2o";
     gtsam::writeG2o(pose_graph_, poses_initial_guess_, dataset_file_name);
 }
 
