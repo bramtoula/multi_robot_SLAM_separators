@@ -100,7 +100,8 @@ class DataHandler:
 
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
-        rospy.loginfo("distances"+str(len(distances))+" "+str(len(distances[0])))
+        rospy.loginfo("distances"+str(len(distances)) +
+                      " "+str(len(distances[0])))
         rospy.loginfo(self.kf_already_used)
         if len(self.kf_already_used) > 0:
             distances[np.array(self.kf_already_used)] = np.inf
@@ -133,7 +134,8 @@ class DataHandler:
     #     self.kf_already_used.append(local_frame_id)
 
     def get_keyframes(self, odom_info):
-        rospy.loginfo("Size of images queue: "+str(len(self.images_l_queue))+"\n")
+        rospy.loginfo("Size of images queue: " +
+                      str(len(self.images_l_queue))+"\n")
         if odom_info.keyFrameAdded:
             if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
                 self.nb_kf_skipped += 1
@@ -198,6 +200,22 @@ class DataHandler:
             kpts_vec.append(resp_feats_and_descs.kpts)
         return FindMatchesResponse(matches_local_resp, matches_other_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
+    def found_separators_local(self, matched_ids_local, matched_ids_other, separators):
+        rospy.loginfo(matched_ids_local)
+        rospy.loginfo(matched_ids_other)
+        try:
+            s_add_seps_pose_graph = rospy.ServiceProxy(
+                'add_separators_pose_graph', ReceiveSeparators)
+            s_add_seps_pose_graph(self.local_robot_id, matched_ids_local,
+                                    matched_ids_other, separators)
+        except rospy.ServiceException, e:
+            print "Service call add sep to pose graph failed: %s" % e
+
+        for i in range(len(matched_ids_local)):
+            self.separators_found.append((matched_ids_local[i], matched_ids_other[i], separators[i]))
+            self.kf_already_used.append(matched_ids_local[i])
+        
+
     def receive_separators_service(self, receive_separators_req):
         rospy.loginfo("Reached receiving separators service")
         rospy.loginfo(receive_separators_req.matched_ids_local)
@@ -212,12 +230,10 @@ class DataHandler:
             print "Service call add sep to pose graph failed: %s" % e
 
         for i in range(len(receive_separators_req.matched_ids_local)):
-            rospy.loginfo(receive_separators_req.matched_ids_local[i])
             self.separators_found.append(
-                (receive_separators_req.matched_ids_local[i], receive_separators_req.matched_ids_other[i], receive_separators_req.separators[i]))
-            rospy.loginfo(receive_separators_req.matched_ids_local[i])
+                (receive_separators_req.matched_ids_other[i], receive_separators_req.matched_ids_local[i], receive_separators_req.separators[i]))
             self.kf_already_used.append(
-                receive_separators_req.matched_ids_local[i])
+                receive_separators_req.matched_ids_other[i])
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)

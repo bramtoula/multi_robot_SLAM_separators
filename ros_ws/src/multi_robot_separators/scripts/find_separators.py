@@ -115,14 +115,15 @@ def find_separators():
                 separator_order_cov_corr = dataHandler.change_var_order_cov(res_transform.poseWithCov)
                 separators_found.append(separator_order_cov_corr)
 
-                # Add the separator to the factor graph
-                try:
-                    s_add_seps_pose_graph = rospy.ServiceProxy(
-                        'add_separators_pose_graph', ReceiveSeparators)
-                    s_add_seps_pose_graph(dataHandler.local_robot_id,matched_ids_local_kept,
-                                          matched_ids_other_kept, separators_found)
-                except rospy.ServiceException, e:
-                    print "Service call add sep to pose graph failed: %s" % e
+                # Add the separator to the factor graph and save it
+                dataHandler.found_separators_local(matched_ids_local_kept, matched_ids_other_kept, separators_found)
+                # try:
+                #     s_add_seps_pose_graph = rospy.ServiceProxy(
+                #         'add_separators_pose_graph', ReceiveSeparators)
+                #     s_add_seps_pose_graph(dataHandler.local_robot_id,matched_ids_local_kept,
+                #                           matched_ids_other_kept, separators_found)
+                # except rospy.ServiceException, e:
+                #     print "Service call add sep to pose graph failed: %s" % e
 
                 # Send the separator back to the other robot
                 try:
