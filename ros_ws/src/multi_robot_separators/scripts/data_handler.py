@@ -102,16 +102,18 @@ class DataHandler:
         local_descs = np.array(self.descriptors)
 
         distances = cdist(local_descs, descriptors_to_comp)
-
+        distances[np.triu_indices(len(distances),-constants.NEIGHBOR_FRAMES_IGNORED)] = np.inf
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
-        rospy.loginfo("distances"+str(len(distances)) +
+        rospy.loginfo("distances matrix size:"+str(len(distances)) +
                       " "+str(len(distances[0])))
         rospy.loginfo(self.local_kf_already_used)
         if len(self.local_kf_already_used) > 0:
             distances[np.array(self.local_kf_already_used)] = np.inf
+            distances[:,np.array(self.local_kf_already_used)] = np.inf
         if len(self.other_kf_already_used) > 0:
             distances[:,np.array(self.other_kf_already_used)] = np.inf
+            distances[np.array(self.other_kf_already_used)] = np.inf
 
         indexes_smallest_values_each_frame = np.argsort(distances, axis=1)[:,0]
         smallest_values_each_frame = distances[np.arange(

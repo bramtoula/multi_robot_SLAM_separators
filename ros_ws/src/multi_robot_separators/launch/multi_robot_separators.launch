@@ -1,7 +1,7 @@
 <launch>
 
 <!-- Play the bag within the namespace -->
-<node pkg="rosbag" type="play" name="playback" args="/kitti_data_orig/kitti_data_odometry_color_sequence_00_part1.bag">
+<node pkg="rosbag" type="play" name="playback" args="/kitti_data_orig/kitti_data_odometry_color_sequence_00.bag">
   <remap from="/kitti/camera_color_left/image_rect" to="/robot_0/kitti/camera_color_left/image_rect"/>
   <remap from="/kitti/camera_color_right/image_rect" to="/robot_0/kitti/camera_color_right/image_rect"/>
   <remap from="/kitti/camera_color_left/camera_info" to="/robot_0/kitti/camera_color_left/camera_info"/>
@@ -13,7 +13,7 @@
 
     <!-- Don't forger to change the robot ID in the name space! -->
     <param name="local_robot_id" type="int" value="0" />
-    <param name="other_robot_id" type="int" value="1" />
+    <param name="other_robot_id" type="int" value="0" />
 
     <remap from="left/camera_info" to="kitti/camera_color_left/camera_info"/>
     <remap from="right/camera_info" to="kitti/camera_color_right/camera_info"/>

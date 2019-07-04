@@ -93,20 +93,20 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
         // }
 
         // Case where the robot computing the separator is saving is to the pose graph
-        if (local_robot_id_ == req.sending_robot_id)
-        {
+        // if (local_robot_id_ == req.sending_robot_id)
+        // {
             // local robot goes with matched other since message comes from the sending robot
-            sending_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
-            receiving_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_local[idx]);
-        }
+        sending_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_local[idx]);
+        receiving_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_other[idx]);
+        // }
 
         // Case where the robot is receiving the separator computed by another robot
-        else
-        {
-            // local robot goes with matched local since it computed the matches
-            receiving_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_local[idx]);
-            sending_robot_symbol = gtsam::Symbol(sending_robot_id_char_, req.matched_ids_other[idx]);
-        }
+        // else
+        // {
+        //     // local robot goes with matched local since it computed the matches
+        //     receiving_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_local[idx]);
+        //     sending_robot_symbol = gtsam::Symbol(sending_robot_id_char_, req.matched_ids_other[idx]);
+        // }
         covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
 
         poseROSToPose3(req.separators[idx].pose, separator);
