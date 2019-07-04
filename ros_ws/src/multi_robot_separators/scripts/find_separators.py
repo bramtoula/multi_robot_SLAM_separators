@@ -55,67 +55,69 @@ def find_separators():
         dataHandler.compute_descriptors()
         service_list = rosservice.get_service_list()
 
-        if i % 20 and (len(dataHandler.descriptors) > 0):
-            # resp_matches = dataHandler.call_find_matches_serv()
-            matched_ids_local_kept = []
-            matched_ids_other_kept = []
-            separators_found = []
+        # Check if other robot is visible
+        if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
+            if i % 20 and (len(dataHandler.descriptors) > 0):
+                # resp_matches = dataHandler.call_find_matches_serv()
+                matched_ids_local_kept = []
+                matched_ids_other_kept = []
+                separators_found = []
 
-            # Call service to find matches and corresponding keypoints and geometric descriptors
-            try:
-                flatten_desc = [
-                    item for sublist in list(dataHandler.descriptors) for item in sublist]
-                res_matches = s_find_matches_query(flatten_desc)
-            except rospy.ServiceException, e:
-                print "Service call to find matches query failed: %s" % e
-                break
-
-            # If matches are found, compute the separators, send them back, and add them to the pose graph
-            for i in range(len(res_matches.matched_id_other)):
-                # Compute geometric features of the local frames that were matched. Use matched_id_other since it is from the point of view of the other robot.
-                local_features_and_desc = dataHandler.get_geom_features(
-                    res_matches.matched_id_other[i])
-
-                ####### Code to compute transform from lowest id to higher id not used anymore. Instead compute from local robot to the robot
-                # # Get the transformation from lowest id to higher id robot
-
-                # # If local id is lowest
-                # if dataHandler.local_robot_id < dataHandler.other_robot_id:
-                #     try:
-
-                #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
-                #         res_transform = s_ans_est_transform(
-                #             local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
-                #     except rospy.ServiceException, e:
-                #         print "Service call failed: %s" % e
-                #         continue
-                # # Local id is higher
-                # else:
-                #     try:
-                #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
-                #         res_transform = s_ans_est_transform(
-                #             res_matches.descriptors_vec[i], local_features_and_desc.descriptors,
-                #             res_matches.kpts3D_vec[i], local_features_and_desc.kpts3D, res_matches.kpts_vec[i], local_features_and_desc.kpts)
-                #     except rospy.ServiceException, e:
-                #         print "Service call failed: %s" % e
-                #         continue
-
-
-
+                # Call service to find matches and corresponding keypoints and geometric descriptors
                 try:
-
-                    # Transform computed FROM local_features_and_desc TO res_matches (other robot)
-                    res_transform = s_ans_est_transform(
-                        local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                    flatten_desc = [
+                        item for sublist in list(dataHandler.descriptors) for item in sublist]
+                    res_matches = s_find_matches_query(flatten_desc)
                 except rospy.ServiceException, e:
-                    print "Service call failed: %s" % e
-                    continue
-                matched_ids_local_kept.append(res_matches.matched_id_other[i])
-                matched_ids_other_kept.append(res_matches.matched_id_local[i])
+                    print "Service call to find matches query failed: %s" % e
+                    break
 
-                # Code returns the covariance with translation variables first and rotation after. We want rotation first
-                separator_order_cov_corr = dataHandler.change_var_order_cov(res_transform.poseWithCov)
-                separators_found.append(separator_order_cov_corr)
+                # If matches are found, compute the separators, send them back, and add them to the pose graph
+                for i in range(len(res_matches.matched_id_other)):
+                    # Compute geometric features of the local frames that were matched. Use matched_id_other since it is from the point of view of the other robot.
+                    local_features_and_desc = dataHandler.get_geom_features(
+                        res_matches.matched_id_other[i])
+
+                    ####### Code to compute transform from lowest id to higher id not used anymore. Instead compute from local robot to the robot
+                    # # Get the transformation from lowest id to higher id robot
+
+                    # # If local id is lowest
+                    # if dataHandler.local_robot_id < dataHandler.other_robot_id:
+                    #     try:
+
+                    #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                    #         res_transform = s_ans_est_transform(
+                    #             local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                    #     except rospy.ServiceException, e:
+                    #         print "Service call failed: %s" % e
+                    #         continue
+                    # # Local id is higher
+                    # else:
+                    #     try:
+                    #         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                    #         res_transform = s_ans_est_transform(
+                    #             res_matches.descriptors_vec[i], local_features_and_desc.descriptors,
+                    #             res_matches.kpts3D_vec[i], local_features_and_desc.kpts3D, res_matches.kpts_vec[i], local_features_and_desc.kpts)
+                    #     except rospy.ServiceException, e:
+                    #         print "Service call failed: %s" % e
+                    #         continue
+
+
+
+                    try:
+
+                        # Transform computed FROM local_features_and_desc TO res_matches (other robot)
+                        res_transform = s_ans_est_transform(
+                            local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
+                    except rospy.ServiceException, e:
+                        print "Service call failed: %s" % e
+                        continue
+                    matched_ids_local_kept.append(res_matches.matched_id_other[i])
+                    matched_ids_other_kept.append(res_matches.matched_id_local[i])
+
+                    # Code returns the covariance with translation variables first and rotation after. We want rotation first
+                    separator_order_cov_corr = dataHandler.change_var_order_cov(res_transform.poseWithCov)
+                    separators_found.append(separator_order_cov_corr)
 
                 # Add the separator to the factor graph and save it
                 dataHandler.found_separators_local(matched_ids_local_kept, matched_ids_other_kept, separators_found)
@@ -130,7 +132,7 @@ def find_separators():
                 # Send the separator back to the other robot
                 try:
                     s_ans_rec_sep(dataHandler.local_robot_id,matched_ids_local_kept,
-                                  matched_ids_other_kept, separators_found)
+                                    matched_ids_other_kept, separators_found)
                 except rospy.ServiceException, e:
                     print "Service call failed: %s" % e
         rate.sleep()

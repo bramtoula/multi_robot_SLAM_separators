@@ -119,13 +119,15 @@ class DataHandler:
 
         indexes_smallest_values_all_frames = np.argsort(smallest_values_each_frame)
 
-        # indexes_smallest_values = np.unravel_index(
-        #     indexes_smallest_values, (len(local_descs), len(descriptors_to_comp)))
-
         matches = []
         for i in range(min(len(indexes_smallest_values_all_frames), constants.MAX_MATCHES)):
             idx_local = indexes_smallest_values_all_frames[i]
             idx_other = indexes_smallest_values_each_frame[indexes_smallest_values_all_frames[i]]
+
+            # Check if other frame index already used
+            if idx_other in [match[1] for match in matches]:
+                continue
+        
             if distances[idx_local, idx_other] < constants.MATCH_DISTANCE:
                 matches.append((idx_local, idx_other))
             else:
