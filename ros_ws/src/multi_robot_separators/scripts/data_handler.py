@@ -199,16 +199,16 @@ class DataHandler:
         else:
             return FindMatchesResponse([], [], [], [], [])
 
-        matches_local_resp = []
-        matches_other_resp = []
+        matches_computing_robot_resp = []
+        matches_querying_robot_resp = []
         # Find corresponding visual keypoints and descriptors
         for match in matches:
             resp_feats_and_descs = self.get_geom_features(match[0])
 
             if not resp_feats_and_descs:
                 continue
-            matches_local_resp.append(match[0])
-            matches_other_resp.append(match[1])
+            matches_computing_robot_resp.append(match[0])
+            matches_querying_robot_resp.append(match[1])
             descriptors_vec.append(resp_feats_and_descs.descriptors)
             kpts3d_vec.append(resp_feats_and_descs.kpts3D)
             kpts_vec.append(resp_feats_and_descs.kpts)
@@ -219,28 +219,30 @@ class DataHandler:
         # rospy.loginfo(matches_local_resp[0])
         # rospy.loginfo(matches_other_resp[0])
         # rospy.loginfo("Done returning")
-        return FindMatchesResponse(matches_local_resp, matches_other_resp, descriptors_vec, kpts3d_vec, kpts_vec)
+        return FindMatchesResponse(matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
-    def found_separators_local(self, matched_ids_local, matched_ids_other, separators):
-        rospy.loginfo(matched_ids_local)
-        rospy.loginfo(matched_ids_other)
+    def found_separators_local(self, matched_ids_from, matched_ids_to, separators):
+        rospy.loginfo(matched_ids_from)
+        rospy.loginfo(matched_ids_to)
         try:
             
-            self.s_add_seps_pose_graph(self.local_robot_id, matched_ids_local,
-                                    matched_ids_other, separators)
+            self.s_add_seps_pose_graph(self.local_robot_id, matched_ids_from,
+                                    matched_ids_to, separators)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
-        for i in range(len(matched_ids_local)):
-            self.separators_found.append((matched_ids_local[i], matched_ids_other[i], separators[i]))
-            self.local_kf_already_used.append(matched_ids_local[i])
-            self.other_kf_already_used.append(matched_ids_other[i])
+        for i in range(len(matched_ids_from)):
+            self.separators_found.append((matched_ids_from[i], matched_ids_to[i], separators[i]))
+
+            # Don't need to add here since this is not the robot computing the matches
+            # self.local_kf_already_used.append(matched_ids_from[i])
+            # self.other_kf_already_used.append(matched_ids_to[i])
         
 
     def receive_separators_service(self, receive_separators_req):
         rospy.loginfo("Reached receiving separators service")
-        rospy.loginfo(receive_separators_req.matched_ids_local)
-        rospy.loginfo(receive_separators_req.matched_ids_other)
+        rospy.loginfo(receive_separators_req.matched_ids_from)
+        rospy.loginfo(receive_separators_req.matched_ids_to)
 
         # Add the separator to the factor graph
         try:
@@ -248,13 +250,13 @@ class DataHandler:
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
-        for i in range(len(receive_separators_req.matched_ids_local)):
+        for i in range(len(receive_separators_req.matched_ids_from)):
             self.separators_found.append(
-                (receive_separators_req.matched_ids_other[i], receive_separators_req.matched_ids_local[i], receive_separators_req.separators[i]))
+                (receive_separators_req.matched_ids_to[i], receive_separators_req.matched_ids_from[i], receive_separators_req.separators[i]))
             self.local_kf_already_used.append(
-                receive_separators_req.matched_ids_other[i])
+                receive_separators_req.matched_ids_to[i])
             self.other_kf_already_used.append(
-                receive_separators_req.matched_ids_local[i])
+                receive_separators_req.matched_ids_from[i])
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)

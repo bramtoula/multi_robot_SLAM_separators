@@ -71,15 +71,15 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
     //////////////// Not using from lowest id to highest id anymore. Now using from the one who computed the transform
     // gtsam::Symbol low_id_robot_symbol;
     // gtsam::Symbol high_id_robot_symbol;
-    gtsam::Symbol sending_robot_symbol;
-    gtsam::Symbol receiving_robot_symbol;
+    gtsam::Symbol robot_symbol_from;
+    gtsam::Symbol robot_symbol_to;
 
-    unsigned char sending_robot_id_char_ = req.sending_robot_id + 'a';
-    for (int idx = 0; idx < req.matched_ids_local.size(); idx++)
+    unsigned char robot_computed_transform_id_char_ = req.robot_computed_transform_id + 'a';
+    for (int idx = 0; idx < req.matched_ids_from.size(); idx++)
     {
 
         // //////////////// Not using from lowest id to highest id anymore. Now using from the one who computed the transform
-        // if (local_robot_id_ < req.sending_robot_id)
+        // if (local_robot_id_ < req.robot_computed_transform_id)
         // {
         //     // local robot goes with matched other since message comes from the sending robot
         //     low_id_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
@@ -93,19 +93,19 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
         // }
 
         // Case where the robot computing the separator is saving is to the pose graph
-        if (local_robot_id_ == req.sending_robot_id)
+        if (local_robot_id_ == req.robot_computed_transform_id)
         {
             // local robot goes with matched other since message comes from the sending robot
-            sending_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_other[idx]);
-            receiving_robot_symbol = gtsam::Symbol(other_robot_id_char_, req.matched_ids_local[idx]);
+            robot_symbol_from = gtsam::Symbol(local_robot_id_char_, req.matched_ids_from[idx]);
+            robot_symbol_to = gtsam::Symbol(other_robot_id_char_, req.matched_ids_to[idx]);
         }
 
         // Case where the robot is receiving the separator computed by another robot
         else
         {
             // local robot goes with matched local since it computed the matches
-            receiving_robot_symbol = gtsam::Symbol(local_robot_id_char_, req.matched_ids_local[idx]);
-            sending_robot_symbol = gtsam::Symbol(sending_robot_id_char_, req.matched_ids_other[idx]);
+            robot_symbol_to = gtsam::Symbol(local_robot_id_char_, req.matched_ids_to[idx]);
+            robot_symbol_from = gtsam::Symbol(robot_computed_transform_id_char_, req.matched_ids_from[idx]);
         }
         covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
 
@@ -114,7 +114,7 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(covariance_mat);
 
         // gtsam::BetweenFactor<gtsam::Pose3> new_factor = gtsam::BetweenFactor<gtsam::Pose3>(low_id_robot_symbol, high_id_robot_symbol, separator, noise_model);
-        gtsam::BetweenFactor<gtsam::Pose3> new_factor = gtsam::BetweenFactor<gtsam::Pose3>(sending_robot_symbol, receiving_robot_symbol, separator, noise_model);
+        gtsam::BetweenFactor<gtsam::Pose3> new_factor = gtsam::BetweenFactor<gtsam::Pose3>(robot_symbol_from, robot_symbol_to, separator, noise_model);
         pose_graph_.push_back(new_factor);
     }
     res.success = true;

@@ -1,6 +1,6 @@
-int8 sending_robot_id
-int16[] matched_ids_local
-int16[] matched_ids_other
+int8 robot_computed_transform_id
+int16[] matched_ids_from
+int16[] matched_ids_to
 geometry_msgs/PoseWithCovariance[] separators
 ---
 bool success
