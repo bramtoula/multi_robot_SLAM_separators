@@ -24,7 +24,8 @@ class DataHandler:
         self.timestamps_kf = []
         self.descriptors = []
         self.separators_found = []
-        self.kf_already_used = []
+        self.local_kf_already_used = []
+        self.other_kf_already_used = []
         self.nb_kf_skipped = 0
 
         tf.reset_default_graph()
@@ -42,6 +43,10 @@ class DataHandler:
 
         self.local_robot_id = rospy.get_param("local_robot_id")
         self.other_robot_id = rospy.get_param("other_robot_id")
+        self.s_add_seps_pose_graph = rospy.ServiceProxy(
+            'add_separators_pose_graph', ReceiveSeparators)
+        self.s_get_feats = rospy.ServiceProxy(
+            'get_features_and_descriptor', GetFeatsAndDesc)
 
     def save_image_l(self, image_l):
         try:
@@ -102,24 +107,31 @@ class DataHandler:
         # Increase distances for local frames which were already matched so we can discover new frames
         rospy.loginfo("distances"+str(len(distances)) +
                       " "+str(len(distances[0])))
-        rospy.loginfo(self.kf_already_used)
-        if len(self.kf_already_used) > 0:
-            distances[np.array(self.kf_already_used)] = np.inf
+        rospy.loginfo(self.local_kf_already_used)
+        if len(self.local_kf_already_used) > 0:
+            distances[np.array(self.local_kf_already_used)] = np.inf
+        if len(self.other_kf_already_used) > 0:
+            distances[:,np.array(self.other_kf_already_used)] = np.inf
 
-        indexes_smallest_values = np.argsort(distances, axis=None)
-        indexes_smallest_values = np.unravel_index(
-            indexes_smallest_values, (len(local_descs), len(descriptors_to_comp)))
+        indexes_smallest_values_each_frame = np.argsort(distances, axis=1)[:,0]
+        smallest_values_each_frame = distances[np.arange(
+            len(distances)), indexes_smallest_values_each_frame]
+
+        indexes_smallest_values_all_frames = np.argsort(smallest_values_each_frame)
+
+        # indexes_smallest_values = np.unravel_index(
+        #     indexes_smallest_values, (len(local_descs), len(descriptors_to_comp)))
 
         matches = []
-        for i in range(min(len(indexes_smallest_values[0]), constants.MAX_MATCHES)):
-            idx_local = indexes_smallest_values[0][i]
-            idx_other = indexes_smallest_values[1][i]
+        for i in range(min(len(indexes_smallest_values_all_frames), constants.MAX_MATCHES)):
+            idx_local = indexes_smallest_values_all_frames[i]
+            idx_other = indexes_smallest_values_each_frame[indexes_smallest_values_all_frames[i]]
             if distances[idx_local, idx_other] < constants.MATCH_DISTANCE:
                 matches.append((idx_local, idx_other))
             else:
                 break
 
-        rospy.loginfo("Find matches")
+        rospy.loginfo("Matches found:")
         rospy.loginfo(matches)
         return matches
 
@@ -198,22 +210,29 @@ class DataHandler:
             descriptors_vec.append(resp_feats_and_descs.descriptors)
             kpts3d_vec.append(resp_feats_and_descs.kpts3D)
             kpts_vec.append(resp_feats_and_descs.kpts)
+        
+        # rospy.loginfo("Returning computed matches")
+        # rospy.loginfo(matches_local_resp)
+        # rospy.loginfo(matches_other_resp)
+        # rospy.loginfo(matches_local_resp[0])
+        # rospy.loginfo(matches_other_resp[0])
+        # rospy.loginfo("Done returning")
         return FindMatchesResponse(matches_local_resp, matches_other_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
     def found_separators_local(self, matched_ids_local, matched_ids_other, separators):
         rospy.loginfo(matched_ids_local)
         rospy.loginfo(matched_ids_other)
         try:
-            s_add_seps_pose_graph = rospy.ServiceProxy(
-                'add_separators_pose_graph', ReceiveSeparators)
-            s_add_seps_pose_graph(self.local_robot_id, matched_ids_local,
+            
+            self.s_add_seps_pose_graph(self.local_robot_id, matched_ids_local,
                                     matched_ids_other, separators)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
         for i in range(len(matched_ids_local)):
             self.separators_found.append((matched_ids_local[i], matched_ids_other[i], separators[i]))
-            self.kf_already_used.append(matched_ids_local[i])
+            self.local_kf_already_used.append(matched_ids_local[i])
+            self.other_kf_already_used.append(matched_ids_other[i])
         
 
     def receive_separators_service(self, receive_separators_req):
@@ -223,17 +242,17 @@ class DataHandler:
 
         # Add the separator to the factor graph
         try:
-            s_add_seps_pose_graph = rospy.ServiceProxy(
-                'add_separators_pose_graph', ReceiveSeparators)
-            s_add_seps_pose_graph(receive_separators_req)
+            self.s_add_seps_pose_graph(receive_separators_req)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
         for i in range(len(receive_separators_req.matched_ids_local)):
             self.separators_found.append(
                 (receive_separators_req.matched_ids_other[i], receive_separators_req.matched_ids_local[i], receive_separators_req.separators[i]))
-            self.kf_already_used.append(
+            self.local_kf_already_used.append(
                 receive_separators_req.matched_ids_other[i])
+            self.other_kf_already_used.append(
+                receive_separators_req.matched_ids_local[i])
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)
@@ -248,9 +267,7 @@ class DataHandler:
         img_r_msg = self.bridge.cv2_to_imgmsg(img_r, encoding="mono8")
 
         try:
-            s_get_feats = rospy.ServiceProxy(
-                'get_features_and_descriptor', GetFeatsAndDesc)
-            resp_feats_and_descs = s_get_feats(img_l_msg, img_r_msg)
+            resp_feats_and_descs = self.s_get_feats(img_l_msg, img_r_msg)
         except rospy.ServiceException, e:
             print "Service call failed: %s" % e
             resp_feats_and_descs = []

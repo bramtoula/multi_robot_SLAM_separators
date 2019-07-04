@@ -44,6 +44,8 @@ def find_separators():
         'estimate_transformation', EstTransform)
     s_find_matches_query = rospy.ServiceProxy(
         'find_matches_query', FindMatches)
+    s_ans_rec_sep = rospy.ServiceProxy(
+        'found_separators_send', ReceiveSeparators)
     i = 0
     while not rospy.is_shutdown():
         # main loop
@@ -127,8 +129,6 @@ def find_separators():
 
                 # Send the separator back to the other robot
                 try:
-                    s_ans_rec_sep = rospy.ServiceProxy(
-                        'found_separators_send', ReceiveSeparators)
                     s_ans_rec_sep(dataHandler.local_robot_id,matched_ids_local_kept,
                                   matched_ids_other_kept, separators_found)
                 except rospy.ServiceException, e:
