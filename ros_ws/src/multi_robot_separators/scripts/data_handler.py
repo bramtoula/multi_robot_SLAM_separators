@@ -31,8 +31,6 @@ class DataHandler:
         self.original_ids_of_kf = []
         self.orig_id_last_img_in_q = 0
 
-        self.latest_matches_sent = dict
-
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
             dtype=tf.float32, shape=[None, None, None, 3])
@@ -242,31 +240,38 @@ class DataHandler:
         # rospy.loginfo(matches_other_resp[0])
         # rospy.loginfo("Done returning")
 
-        self.latest_matches_sent = dict(zip(matches_local_resp, matches_other_resp))
         return FindMatchesResponse(matches_local_resp, matches_other_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
-    def found_separators_local(self, matched_ids_local, matched_ids_other, separators):
+    def found_separators_local(self, matched_ids_local, matched_ids_other, transform_found, separators):
         rospy.loginfo("Separators found using the following KF ids: ")
         rospy.loginfo(matched_ids_local)
         rospy.loginfo(matched_ids_other)
+
+        kept_local_id = []
+        kept_other_id = []
+        kept_sep = []
+        kept_transform_found = []
+        for i in range(len(matched_ids_local)):
+
+            if transform_found[i]:
+                kept_local_id.append(matched_ids_local[i])
+                kept_other_id.append(matched_ids_other[i])
+                kept_sep.append(separators[i])
+                kept_transform_found.append(transform_found[i])
+                self.separators_found.append(
+                    (matched_ids_local[i], matched_ids_other[i], separators[i]))
+                self.local_kf_already_used.append(matched_ids_local[i])
+                self.other_kf_already_used.append(matched_ids_other[i])
+            else:
+                self.add_kf_pairs_to_ignore(matched_ids_other[i],matched_ids_local[i])
+
         try:
             
-            self.s_add_seps_pose_graph(self.local_robot_id, matched_ids_local,
-                                    matched_ids_other, separators)
+            self.s_add_seps_pose_graph(self.local_robot_id, kept_local_id,
+                                       kept_other_id, kept_transform_found,kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
-        for i in range(len(matched_ids_local)):
-            self.separators_found.append((matched_ids_local[i], matched_ids_other[i], separators[i]))
-            self.local_kf_already_used.append(matched_ids_local[i])
-            self.other_kf_already_used.append(matched_ids_other[i])
-
-            # Keep only the ids which weren't used to succesfully compute a transform
-            self.latest_matches_sent.pop(matched_ids_local[i])
-
-        # Ignore pairs which didn't produce transforms)
-        for local_id, other_id in self.latest_matches_sent.items():
-            self.add_kf_pairs_to_ignore(local_id,other_id)
 
 
     def receive_separators_service(self, receive_separators_req):

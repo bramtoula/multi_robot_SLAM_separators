@@ -62,6 +62,7 @@ def find_separators():
                 # resp_matches = dataHandler.call_find_matches_serv()
                 matched_ids_local_kept = []
                 matched_ids_other_kept = []
+                transform_found = []
                 separators_found = []
 
                 # Call service to find matches and corresponding keypoints and geometric descriptors
@@ -89,8 +90,10 @@ def find_separators():
 
 
                     # Check if transform was successfully computed
-                    if not res_transform.success:
-                        continue
+                    if res_transform.success:
+                        transform_found.append(True)
+                    else:
+                        transform_found.append(False)
 
                     matched_ids_local_kept.append(res_matches.matched_id_other[i])
                     matched_ids_other_kept.append(res_matches.matched_id_local[i])
@@ -100,7 +103,7 @@ def find_separators():
                     separators_found.append(separator_order_cov_corr)
 
                 # Add the separator to the factor graph and save it
-                dataHandler.found_separators_local(matched_ids_local_kept, matched_ids_other_kept, separators_found)
+                dataHandler.found_separators_local(matched_ids_local_kept, matched_ids_other_kept, transform_found,separators_found)
 
                 # Send the separator back to the other robot
                 # try:
