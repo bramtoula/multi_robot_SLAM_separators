@@ -175,6 +175,15 @@ bool StereoCamGeometricTools::estimateTransformation(multi_robot_separators::Est
 
     covToFloat64Msg(info.covariance, res.poseWithCov.covariance);
     transformToPoseMsg(result2, res.poseWithCov.pose);
+    if (result2.isNull())
+    {
+        res.success = false;
+    }
+    else
+    {
+        res.success = true;
+    }
+    
     return true;
 }
 

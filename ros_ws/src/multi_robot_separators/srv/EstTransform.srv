@@ -6,3 +6,4 @@ KeyPointVec kptsFrom
 KeyPointVec kptsTo
 ---
 geometry_msgs/PoseWithCovariance poseWithCov
+bool success
