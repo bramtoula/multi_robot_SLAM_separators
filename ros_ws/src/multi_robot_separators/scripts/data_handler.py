@@ -26,9 +26,12 @@ class DataHandler:
         self.separators_found = []
         self.local_kf_already_used = []
         self.other_kf_already_used = []
+        self.kf_pairs_ignored = []
         self.nb_kf_skipped = 0
         self.original_ids_of_kf = []
         self.orig_id_last_img_in_q = 0
+
+        self.latest_matches_sent = dict
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -114,13 +117,18 @@ class DataHandler:
 
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
-        rospy.loginfo("distances"+str(len(distances)) +
-                      " "+str(len(distances[0])))
+        rospy.loginfo("distances matrix size: " +
+                      str(len(distances)) + " "+str(len(distances[0])))
+        rospy.loginfo("Keyframes already used: ")
         rospy.loginfo(self.local_kf_already_used)
         if len(self.local_kf_already_used) > 0:
             distances[np.array(self.local_kf_already_used)] = np.inf
         if len(self.other_kf_already_used) > 0:
             distances[:,np.array(self.other_kf_already_used)] = np.inf
+
+        for pair in self.kf_pairs_ignored:
+            distances[pair[0], pair[1]] = np.inf
+
 
         indexes_smallest_values_each_frame = np.argsort(distances, axis=1)[:,0]
         smallest_values_each_frame = distances[np.arange(
@@ -232,9 +240,13 @@ class DataHandler:
         # rospy.loginfo(matches_local_resp[0])
         # rospy.loginfo(matches_other_resp[0])
         # rospy.loginfo("Done returning")
+        self.latest_matches_sent = dict(
+            zip(matches_computing_robot_resp, matches_querying_robot_resp))
+
         return FindMatchesResponse(matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
     def found_separators_local(self, matched_ids_from, matched_ids_to, separators):
+        rospy.loginfo("Separators found using the following KF ids: ")
         rospy.loginfo(matched_ids_from)
         rospy.loginfo(matched_ids_to)
         try:
@@ -253,7 +265,7 @@ class DataHandler:
         
 
     def receive_separators_service(self, receive_separators_req):
-        rospy.loginfo("Reached receiving separators service")
+        rospy.loginfo("Reached receiving separators service, with the following KF ids")
         rospy.loginfo(receive_separators_req.matched_ids_from)
         rospy.loginfo(receive_separators_req.matched_ids_to)
 
@@ -270,6 +282,15 @@ class DataHandler:
                 receive_separators_req.matched_ids_to[i])
             self.other_kf_already_used.append(
                 receive_separators_req.matched_ids_from[i])
+
+            # Keep only the ids which weren't used to succesfully compute a transform
+            self.latest_matches_sent.pop(matched_ids_to[i])
+
+        # Ignore pairs which didn't produce transforms)
+        for local_id, other_id in self.latest_matches_sent.items():
+            self.add_kf_pairs_to_ignore(local_id, other_id)
+
+
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
         return ReceiveSeparatorsResponse(True)
@@ -309,3 +330,6 @@ class DataHandler:
 
         separator_corr.covariance = tuple(cov_r_first.flatten())
         return separator_corr
+
+    def add_kf_pairs_to_ignore(self, id_local, id_other):
+        self.kf_pairs_ignored.append([id_local, id_other])

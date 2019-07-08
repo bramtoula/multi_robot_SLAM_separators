@@ -85,6 +85,11 @@ def find_separators():
                     except rospy.ServiceException, e:
                         print "Service call failed: %s" % e
                         continue
+
+                    # Check if transform was successfully computed
+                    if not res_transform.success:
+                        continue
+
                     matched_ids_from_kept.append(
                         res_matches.matched_ids_querying_robot[i])
                     matched_ids_to_kept.append(
