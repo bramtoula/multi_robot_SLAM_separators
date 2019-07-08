@@ -61,6 +61,7 @@ def find_separators():
                 # resp_matches = dataHandler.call_find_matches_serv()
                 matched_ids_from_kept = []
                 matched_ids_to_kept = []
+                transform_est_success = []
                 separators_found = []
 
                 # Call service to find matches and corresponding keypoints and geometric descriptors
@@ -87,8 +88,10 @@ def find_separators():
                         continue
 
                     # Check if transform was successfully computed
-                    if not res_transform.success:
-                        continue
+                    if res_transform.success:
+                        transform_est_success.append(True)
+                    else:
+                        transform_est_success.append(False)
 
                     matched_ids_from_kept.append(
                         res_matches.matched_ids_querying_robot[i])
@@ -100,10 +103,10 @@ def find_separators():
                     separators_found.append(separator_order_cov_corr)
 
                 # Add the separator to the factor graph and save it
-                dataHandler.found_separators_local(matched_ids_from_kept, matched_ids_to_kept, separators_found)
+                dataHandler.found_separators_local(matched_ids_from_kept, matched_ids_to_kept, transform_est_success,separators_found)
                 try:
                     s_ans_rec_sep(dataHandler.local_robot_id,matched_ids_from_kept,
-                                    matched_ids_to_kept, separators_found)
+                                    matched_ids_to_kept, transform_est_success, separators_found)
                 except rospy.ServiceException, e:
                     print "Service call failed: %s" % e
         rate.sleep()
