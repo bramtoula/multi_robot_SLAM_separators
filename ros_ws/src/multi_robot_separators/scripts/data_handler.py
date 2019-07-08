@@ -27,6 +27,8 @@ class DataHandler:
         self.local_kf_already_used = []
         self.other_kf_already_used = []
         self.nb_kf_skipped = 0
+        self.original_ids_of_kf = []
+        self.orig_id_last_img_in_q = 0
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -48,12 +50,19 @@ class DataHandler:
         self.s_get_feats = rospy.ServiceProxy(
             'get_features_and_descriptor', GetFeatsAndDesc)
 
+    def __del__(self):
+        with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids.txt', 'w') as file:
+            for id in self.original_ids_of_kf:
+                file.write("%i\n" % id)
+
     def save_image_l(self, image_l):
         try:
             cv_image = self.bridge.imgmsg_to_cv2(image_l, "rgb8")
         except CvBridgeError as e:
             print(e)
+
         self.images_l_queue.append((image_l.header.stamp, cv_image))
+        self.orig_id_last_img_in_q += 1
         if len(self.images_l_queue) > constants.MAX_QUEUE_SIZE:
             self.images_l_queue.pop(0)
 
@@ -182,6 +191,10 @@ class DataHandler:
 
                 # Reset the counter of KF skipped
                 self.nb_kf_skipped = 0
+
+                # Store the original frame id of the kf added
+                self.original_ids_of_kf.append(
+                    self.orig_id_last_img_in_q - len(self.images_l_queue))
 
     def find_matches_service(self, find_matches_req):
 
