@@ -51,10 +51,13 @@ class DataHandler:
         self.s_get_feats = rospy.ServiceProxy(
             'get_features_and_descriptor', GetFeatsAndDesc)
 
-    def __del__(self):
-        with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids.txt', 'w') as file:
-            for id in self.original_ids_of_kf:
-                file.write("%i\n" % id)
+        with open(constants.LOG_PATH+'kf_orig_ids.txt', 'w') as file:
+            rospy.loginfo("Cleaning KF ids log file\n")
+
+    # def __del__(self):
+    #     with open(constants.LOG_PATH+'kf_orig_ids.txt', 'a') as file:
+    #         for id in self.original_ids_of_kf:
+    #             file.write("%i\n" % id)
 
     def save_image_l(self, image_l):
         try:
@@ -202,6 +205,9 @@ class DataHandler:
                 # Store the original frame id of the kf addeds
                 self.original_ids_of_kf.append(
                     self.orig_id_last_img_in_q - len(self.images_l_queue))
+
+                with open(constants.LOG_PATH+'kf_orig_ids.txt', 'a') as file:
+                    file.write("%i\n" % self.original_ids_of_kf[-1])
 
     def find_matches_service(self, find_matches_req):
 
