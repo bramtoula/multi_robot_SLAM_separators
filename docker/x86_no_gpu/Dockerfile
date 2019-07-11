@@ -1,4 +1,4 @@
-FROM introlab3it/rtabmap_ros:melodic-latest
+FROM ros:melodic-perception
 
 # Fix from http://answers.ros.org/question/325039/apt-update-fails-cannot-install-pkgs-key-not-working/, install python stuff and catkin tools
 RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 \
@@ -13,7 +13,6 @@ RUN apt-key del 421C365BD9FF1F717815A3895523BAEEB01FA116 \
 
 WORKDIR /root/
 
-
 # GTSAM 
 RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && cd gtsam \
@@ -23,11 +22,25 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
     && make -j4 \
     && make install
 
+
 # Download resources needed later for netvlad
 RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
     unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \ 
+    rm vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
+
+# Rtabmap-ros modified package
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+RUN apt-get update && \
+    # Install dependencies of original rtabmap_ros
+    apt-get install -y $(apt-cache depends ros-melodic-rtabmap-ros | grep Depends | sed "s/.*ends:\ //" | tr '\n' ' ') && \
+    mkdir -p rtabmap_ros_ws/src && \
+    cd rtabmap_ros_ws/src && \
+    git clone https://github.com/bramtoula/rtabmap_ros.git && \
+    cd .. && \
+    source /opt/ros/melodic/setup.bash && \
+    catkin build
 
 ARG reset_clone0
 
@@ -39,7 +52,7 @@ RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git  && \
     cd matlab && \
     mv ~/example_stats.mat . && \
     cd ~/multi_robot_SLAM_separators/ros_ws && \
-    source /opt/ros/melodic/setup.bash && \
+    source ~/rtabmap_ros_ws/devel/setup.bash && \
     catkin build && \
     source devel/setup.bash && \
     mkdir ~/multi_robot_SLAM_separators/logs
