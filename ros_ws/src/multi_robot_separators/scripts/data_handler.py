@@ -51,8 +51,12 @@ class DataHandler:
         self.s_get_feats = rospy.ServiceProxy(
             'get_features_and_descriptor', GetFeatsAndDesc)
 
+        self.set_fixed_covariance = rospy.get_param("set_fixed_covariance")
+        self.translation_std = rospy.get_param("translation_std")
+        self.rotation_std = rospy.get_param("rotation_std")
+
     def __del__(self):
-        with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids.txt', 'w') as file:
+        with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
             for id in self.original_ids_of_kf:
                 file.write("%i\n" % id)
 
@@ -282,7 +286,7 @@ class DataHandler:
         kept_sep = []
         kept_transform_est_success = []
 
-         for i in range(len(receive_separators_req.matched_ids_from)):
+        for i in range(len(receive_separators_req.matched_ids_from)):
             if receive_separators_req.transform_est_success[i]:
 
                 kept_from_id.append(receive_separators_req.matched_ids_from[i])
@@ -337,18 +341,26 @@ class DataHandler:
     #     else:
     #         return False
 
-    def change_var_order_cov(self, separator_poseWithCov):
-        cov_t_first = np.asarray(
-            separator_poseWithCov.covariance).reshape((6, 6))
-        cov_r_first = np.zeros((6, 6))
+    def fix_covariance(self, separator_poseWithCov):
+        if self.set_fixed_covariance:
+            cov_fixed = np.zeros((6,6))
+            np.fill_diagonal(cov_fixed[:3,:3],self.rotation_std**2)
+            np.fill_diagonal(cov_fixed[3:,3:], self.translation_std**2)
+            separator_corr = separator_poseWithCov
+            separator_corr.covariance = tuple(cov_fixed.flatten())
+        else:
+            # Change order to have rotation first, then translation
+            cov_t_first = np.asarray(
+                separator_poseWithCov.covariance).reshape((6, 6))
+            cov_r_first = np.zeros((6, 6))
 
-        separator_corr = separator_poseWithCov
-        cov_r_first[:3, :3] = cov_t_first[3:, 3:]
-        cov_r_first[3:, 3:] = cov_t_first[:3, :3]
-        cov_r_first[3:, :3] = cov_t_first[:3, 3:]
-        cov_r_first[:3, 3:] = cov_t_first[3:, :3]
+            separator_corr = separator_poseWithCov
+            cov_r_first[:3, :3] = cov_t_first[3:, 3:]
+            cov_r_first[3:, 3:] = cov_t_first[:3, :3]
+            cov_r_first[3:, :3] = cov_t_first[:3, 3:]
+            cov_r_first[:3, 3:] = cov_t_first[3:, :3]
 
-        separator_corr.covariance = tuple(cov_r_first.flatten())
+            separator_corr.covariance = tuple(cov_r_first.flatten())
         return separator_corr
 
     def add_kf_pairs_to_ignore(self, id_local, id_other):

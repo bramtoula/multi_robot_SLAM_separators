@@ -2,16 +2,8 @@
 import rospy
 import rosservice
 import sys
-# sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2
-# sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import numpy as np
-# import tensorflow as tf
-# import glob
-# import scipy
-# import netvlad_tf.net_from_mat as nfm
-# import netvlad_tf.nets as nets
-# from std_msgs.msg import String
 from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from data_handler import DataHandler
@@ -98,12 +90,14 @@ def find_separators():
                     matched_ids_to_kept.append(
                         res_matches.matched_ids_computing_robot[i])
 
-                    # Code returns the covariance with translation variables first and rotation after. We want rotation first
-                    separator_order_cov_corr = dataHandler.change_var_order_cov(res_transform.poseWithCov)
+                    # Code returns the covariance with translation variables first and rotation after. We want rotation first. Also checks if params set the covariance manually
+                    separator_order_cov_corr = dataHandler.fix_covariance(res_transform.poseWithCov)
                     separators_found.append(separator_order_cov_corr)
 
                 # Add the separator to the factor graph and save it
                 dataHandler.found_separators_local(matched_ids_from_kept, matched_ids_to_kept, transform_est_success,separators_found)
+
+                # Send the separator found to the other robot concerned
                 try:
                     s_ans_rec_sep(dataHandler.local_robot_id,matched_ids_from_kept,
                                     matched_ids_to_kept, transform_est_success, separators_found)
