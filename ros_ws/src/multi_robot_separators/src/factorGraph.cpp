@@ -26,14 +26,15 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         }
         else
         {
-            ROS_INFO("Covariance is taken from RTAB-Map");
+            ROS_INFO("Covariance is taken from the RTAB-Map estimations");
+            set_fixed_covariance_ = false
         }
         
         
     }
     else
     {
-        ROS_ERROR("Couldn't find other robot ID");
+        ROS_ERROR("Covariance is taken from the RTAB-Map estimations");
     }
 
     // Get local  robot id
@@ -43,7 +44,7 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
     }
     else
     {
-        set_fixed_covariance_ = false;
+        ROS_ERROR("Couldn't find local robot ID");
     }
 
     local_robot_id_char_ = local_robot_id_ + 'a';
@@ -189,7 +190,7 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
         // If covariance is manually set, replace the one in accumulated_transform_
         if (set_fixed_covariance_)
         {
-            manuallySetCovMat(received_transform.covariance_matrix);
+            manuallySetCovMat(accumulated_transform_.covariance_matrix);
         }
 
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(accumulated_transform_.covariance_matrix);
