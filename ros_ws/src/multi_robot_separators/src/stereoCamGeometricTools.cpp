@@ -58,7 +58,7 @@ void _PrintMatrix(char *pMessage, cv::Mat &mat)
 StereoCamGeometricTools::StereoCamGeometricTools(sensor_msgs::CameraInfo &camera_info_l, sensor_msgs::CameraInfo &camera_info_r)
 {
     ULogger::setType(ULogger::kTypeConsole);
-    ULogger::setLevel(ULogger::kDebug);
+    ULogger::setLevel(ULogger::kInfo);
 
     cv::Size image_size_l(camera_info_l.width, camera_info_l.height);
 

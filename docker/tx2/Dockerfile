@@ -68,7 +68,8 @@ RUN git clone https://bitbucket.org/gtborg/gtsam  \
 # Download resources needed later for netvlad
 RUN git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \ 
+    unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
+    rm vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
     wget http://rpg.ifi.uzh.ch/datasets/netvlad/example_stats.mat 
 
 # Clone my repo
