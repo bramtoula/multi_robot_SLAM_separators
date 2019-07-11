@@ -90,9 +90,7 @@ def find_separators():
                     matched_ids_to_kept.append(
                         res_matches.matched_ids_computing_robot[i])
 
-                    # Code returns the covariance with translation variables first and rotation after. We want rotation first. Also checks if params set the covariance manually
-                    separator_order_cov_corr = dataHandler.fix_covariance(res_transform.poseWithCov)
-                    separators_found.append(separator_order_cov_corr)
+                    separators_found.append(res_transform.poseWithCov)
 
                 # Add the separator to the factor graph and save it
                 dataHandler.found_separators_local(matched_ids_from_kept, matched_ids_to_kept, transform_est_success,separators_found)

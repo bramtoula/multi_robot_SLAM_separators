@@ -4,6 +4,38 @@
 FactorGraphData::FactorGraphData(ros::NodeHandle n)
 {
 
+    // Check if covariance is manually fixed
+    if (n.getParam("set_fixed_covariance", set_fixed_covariance_))
+    {
+        if (set_fixed_covariance_)
+        {
+
+            // Get covariance params
+            if (!n.getParam("translation_std", translation_std_))
+            {
+                ROS_INFO("Couldn't find translation std to fix covariance");
+                return;
+            }
+            if (!n.getParam("rotation_std", rotation_std_))
+            {
+                ROS_INFO("Couldn't find rotation std to fix covariance");
+                return;
+            }
+
+            ROS_INFO("Covariance will be manually fixed with %fm STD for translations and %frad STD for rotations", translation_std_, rotation_std_);
+        }
+        else
+        {
+            ROS_INFO("Covariance is taken from RTAB-Map");
+        }
+        
+        
+    }
+    else
+    {
+        ROS_ERROR("Couldn't find other robot ID");
+    }
+
     // Get local  robot id
     if (n.getParam("local_robot_id", local_robot_id_))
     {
@@ -11,7 +43,7 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
     }
     else
     {
-        ROS_ERROR("Couldn't find local robot ID");
+        set_fixed_covariance_ = false;
     }
 
     local_robot_id_char_ = local_robot_id_ + 'a';
@@ -28,14 +60,6 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
     }
 
     other_robot_id_char_ = other_robot_id_ + 'a';
-
-    // // Extract robot id from ROS namespace
-    // std::string ns = ros::this_node::getNamespace();
-
-    // // Only works up to robot 9 (2 chars after that)
-    // robot_id_char_ = ns.back();
-    // robot_id_ = int(robot_id_char_) - 'a';
-    // ROS_INFO("Robot id found from namespace: %d", robot_id_);
 
     nb_keyframes_ = 0;
     resetPoseWithCovariance(accumulated_transform_);
@@ -111,6 +135,12 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
 
         poseROSToPose3(req.separators[idx].pose, separator);
 
+        // If covariance is manually set, replace the one in accumulated_transform_
+        if (set_fixed_covariance_)
+        {
+            manuallySetCovMat(covariance_mat);
+        }
+
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(covariance_mat);
 
         // gtsam::BetweenFactor<gtsam::Pose3> new_factor = gtsam::BetweenFactor<gtsam::Pose3>(low_id_robot_symbol, high_id_robot_symbol, separator, noise_model);
@@ -155,6 +185,13 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
         poses_initial_guess_.insert(robot_cur_symbol.key(), cur_pose_);
         // ROS_INFO("Keyframe added");
         // ROS_INFO("%f %f %f", accumulated_transform_.pose.x(), accumulated_transform_.pose.y(), accumulated_transform_.pose.z());
+
+        // If covariance is manually set, replace the one in accumulated_transform_
+        if (set_fixed_covariance_)
+        {
+            manuallySetCovMat(received_transform.covariance_matrix);
+        }
+
         gtsam::SharedNoiseModel noise_model = gtsam::noiseModel::Gaussian::Covariance(accumulated_transform_.covariance_matrix);
         gtsam::BetweenFactor<gtsam::Pose3>
             new_factor = gtsam::BetweenFactor<gtsam::Pose3>(robot_prev_symbol, robot_cur_symbol, accumulated_transform_.pose, noise_model);
@@ -174,7 +211,18 @@ void FactorGraphData::addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg)
     }
 }
 
-int main(int argc, char **argv)
+void FactorGraphData::manuallySetCovMat(gtsam::Matrix &cov_mat_to_replace)
+{
+    cov_mat_to_replace = gtsam::zeros(6,6);
+    cov_mat_to_replace(0, 0) = rotation_std_ * rotation_std_;
+    cov_mat_to_replace(1, 1) = rotation_std_ * rotation_std_;
+    cov_mat_to_replace(2, 2) = rotation_std_ * rotation_std_;
+    cov_mat_to_replace(3, 3) = translation_std_ * translation_std_;
+    cov_mat_to_replace(4, 4) = translation_std_ * translation_std_;
+    cov_mat_to_replace(5, 5) = translation_std_ * translation_std_;
+}
+
+    int main(int argc, char **argv)
 {
     ros::init(argc, argv, "factor_graph");
     ros::NodeHandle n;

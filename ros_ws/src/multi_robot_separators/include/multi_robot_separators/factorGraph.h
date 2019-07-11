@@ -36,12 +36,16 @@ private:
     void poseCompose(const PoseWithCovariance &a,
                      const PoseWithCovariance &b,
                      PoseWithCovariance &out);
+    bool set_fixed_covariance_;
+    float translation_std_;
+    float rotation_std_;
 
 public:
-    void addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg);
+    void
+    addOdometry(const rtabmap_ros::OdomInfo::ConstPtr &msg);
     bool addSeparators(multi_robot_separators::ReceiveSeparators::Request &req,
-                      multi_robot_separators::ReceiveSeparators::Response &res);
-
+                       multi_robot_separators::ReceiveSeparators::Response &res);
+    void manuallySetCovMat(gtsam::Matrix &cov_mat_to_replace);
     FactorGraphData(ros::NodeHandle n);
     ~FactorGraphData();
 };
