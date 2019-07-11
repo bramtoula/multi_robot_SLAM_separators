@@ -2,7 +2,8 @@
 
 #include <tf_conversions/tf_eigen.h>
 #include <eigen_conversions/eigen_msg.h>
-
+#include <rtabmap/utilite/ULogger.h>
+#include <rtabmap/utilite/UStl.h>
 // adapted from https://github.com/introlab/rtabmap_ros/blob/master/src/MsgConversion.cpp
 std::vector<cv::Point3f> keypoints3DFromROS(const multi_robot_separators::KeyPoint3DVec &msg)
 {
@@ -162,4 +163,80 @@ void poseROSToPose3(const geometry_msgs::Pose &msg, gtsam::Pose3 &pose3_out)
     gtsam::Rot3 rot(msg.orientation.w, msg.orientation.x, msg.orientation.y, msg.orientation.z);
     gtsam::Point3 pt(msg.position.x, msg.position.y, msg.position.z);
     pose3_out = gtsam::Pose3(rot, pt);
+}
+
+// Taken from RTAB-Map code
+rtabmap::CameraModel cameraModelFromROS(
+    const sensor_msgs::CameraInfo &camInfo,
+    const rtabmap::Transform &localTransform)
+{
+    cv::Mat K;
+    UASSERT(camInfo.K.empty() || camInfo.K.size() == 9);
+    if (!camInfo.K.empty())
+    {
+        K = cv::Mat(3, 3, CV_64FC1);
+        memcpy(K.data, camInfo.K.elems, 9 * sizeof(double));
+    }
+
+    cv::Mat D;
+    if (camInfo.D.size())
+    {
+        if (camInfo.D.size() >= 4 &&
+            (uStrContains(camInfo.distortion_model, "fisheye") ||
+             uStrContains(camInfo.distortion_model, "equidistant")))
+        {
+            D = cv::Mat::zeros(1, 6, CV_64FC1);
+            D.at<double>(0, 0) = camInfo.D[0];
+            D.at<double>(0, 1) = camInfo.D[1];
+            D.at<double>(0, 4) = camInfo.D[2];
+            D.at<double>(0, 5) = camInfo.D[3];
+        }
+        else
+        {
+            D = cv::Mat(1, camInfo.D.size(), CV_64FC1);
+            memcpy(D.data, camInfo.D.data(), D.cols * sizeof(double));
+        }
+    }
+
+    cv::Mat R;
+    UASSERT(camInfo.R.empty() || camInfo.R.size() == 9);
+    if (!camInfo.R.empty())
+    {
+        R = cv::Mat(3, 3, CV_64FC1);
+        memcpy(R.data, camInfo.R.elems, 9 * sizeof(double));
+    }
+
+    cv::Mat P;
+    UASSERT(camInfo.P.empty() || camInfo.P.size() == 12);
+    if (!camInfo.P.empty())
+    {
+        P = cv::Mat(3, 4, CV_64FC1);
+        memcpy(P.data, camInfo.P.elems, 12 * sizeof(double));
+    }
+
+    return rtabmap::CameraModel(
+        "ros",
+        cv::Size(camInfo.width, camInfo.height),
+        K, D, R, P,
+        localTransform);
+}
+
+rtabmap::StereoCameraModel stereoCameraModelFromROS(
+    const sensor_msgs::CameraInfo &leftCamInfo,
+    const sensor_msgs::CameraInfo &rightCamInfo,
+    const rtabmap::Transform &localTransform,
+    const rtabmap::Transform &stereoTransform)
+{
+    return rtabmap::StereoCameraModel(
+        "ros",
+        cameraModelFromROS(leftCamInfo, localTransform),
+        cameraModelFromROS(rightCamInfo, localTransform),
+        stereoTransform);
+}
+
+rtabmap::Transform transformFromTF(const tf::Transform &transform)
+{
+    Eigen::Affine3d eigenTf;
+    tf::transformTFToEigen(transform, eigenTf);
+    return rtabmap::Transform::fromEigen3d(eigenTf);
 }

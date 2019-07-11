@@ -182,11 +182,17 @@ class DataHandler:
                         "Keyframe timestamp not found in the saved images queue")
                     return
 
-                rospy.loginfo("Adding a keyframe and cleaning queue")
                 self.timestamps_kf.append(odom_info.header.stamp)
                 # Save geometric features and descs of keyframe images
-                self.geometric_feats.append(self.compute_geom_features(
-                    self.images_l_queue[idx_images_l_q][1], self.images_r_queue[idx_images_r_q][1]))
+                geometric_feats = self.compute_geom_features(self.images_l_queue[idx_images_l_q][1], self.images_r_queue[idx_images_r_q][1])
+
+                # Make sure we were able to compute features
+                if not geometric_feats:
+                    return
+
+                rospy.loginfo("Adding a keyframe and cleaning queue")
+
+                self.geometric_feats.append(geometric_feats)
                 self.images_rgb_kf.append(
                     self.images_rgb_queue[idx_images_rgb_q][1])
 

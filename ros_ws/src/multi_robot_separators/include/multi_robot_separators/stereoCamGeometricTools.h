@@ -1,4 +1,6 @@
 #include "ros/ros.h"
+#include <tf/tf.h>
+#include <tf/transform_listener.h>
 #include "multi_robot_separators/EstTransform.h"
 #include "multi_robot_separators/MsgConversion.h"
 #include "multi_robot_separators/GetFeatsAndDesc.h"
@@ -14,16 +16,17 @@ using namespace rtabmap;
 class StereoCamGeometricTools
 {
 private:
-    StereoCameraModel cam;
-    Registration *_registrationPipeline;
-    RegistrationInfo info;
-    cv::Size imageSize;
+    StereoCameraModel cam_;
+    Registration *registrationPipeline_;
+    RegistrationInfo info_;
+    cv::Size image_size_;
 
-        public : bool
-                 getFeaturesAndDescriptor(multi_robot_separators::GetFeatsAndDesc::Request &req,
-                                          multi_robot_separators::GetFeatsAndDesc::Response &res);
+public:
+    bool
+    getFeaturesAndDescriptor(multi_robot_separators::GetFeatsAndDesc::Request &req,
+                             multi_robot_separators::GetFeatsAndDesc::Response &res);
     bool estimateTransformation(multi_robot_separators::EstTransform::Request &req,
                                 multi_robot_separators::EstTransform::Response &res);
-    StereoCamGeometricTools(sensor_msgs::CameraInfo &camera_info_l, sensor_msgs::CameraInfo &camera_info_r);
+    StereoCamGeometricTools(const sensor_msgs::CameraInfo &camera_info_l,const sensor_msgs::CameraInfo &camera_info_r,const std::string &frame_id,const bool &estimate_stereo_transform_from_tf);
     // void ~StereoCamGeometricTools();
 };

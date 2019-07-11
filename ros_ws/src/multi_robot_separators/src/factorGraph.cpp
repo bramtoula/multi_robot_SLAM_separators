@@ -27,7 +27,7 @@ FactorGraphData::FactorGraphData(ros::NodeHandle n)
         else
         {
             ROS_INFO("Covariance is taken from the RTAB-Map estimations");
-            set_fixed_covariance_ = false
+            set_fixed_covariance_ = false;
         }
         
         

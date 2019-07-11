@@ -6,12 +6,14 @@
 #include <multi_robot_separators/KeyPoint3DVec.h>
 #include <multi_robot_separators/KeyPointVec.h>
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/CameraInfo.h>
 
 #include <opencv2/opencv.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 #include <rtabmap/core/Transform.h>
+#include <rtabmap/core/StereoCameraModel.h>
 
 #include <gtsam/geometry/Pose3.h>
 #include <gtsam/geometry/Rot3.h>
@@ -42,3 +44,13 @@ void covarianceToMatrix(const boost::array<double, 36ul> &msg, gtsam::Matrix &co
 
 void transformToPose3(const geometry_msgs::Transform &msg, gtsam::Pose3 &pose3_out);
 void poseROSToPose3(const geometry_msgs::Pose &msg, gtsam::Pose3 &pose3_out);
+
+rtabmap::CameraModel cameraModelFromROS(
+    const sensor_msgs::CameraInfo &camInfo,
+    const rtabmap::Transform &localTransform = rtabmap::Transform::getIdentity());
+rtabmap::StereoCameraModel stereoCameraModelFromROS(
+    const sensor_msgs::CameraInfo &leftCamInfo,
+    const sensor_msgs::CameraInfo &rightCamInfo,
+    const rtabmap::Transform &localTransform = rtabmap::Transform::getIdentity(),
+    const rtabmap::Transform &stereoTransform = rtabmap::Transform());
+rtabmap::Transform transformFromTF(const tf::Transform &transform);
