@@ -13,6 +13,26 @@ from rtabmap_ros.msg import OdomInfo
 
 from scipy.spatial.distance import cdist
 
+from bisect import bisect_left
+
+# From https://stackoverflow.com/questions/12141150/from-list-of-integers-get-number-closest-to-a-given-value/12141511#12141511
+def takeClosest(myList, myNumber):
+    """
+    Assumes myList is sorted. Returns closest value to myNumber.
+
+    If two numbers are equally close, return the smallest number.
+    """
+    pos = bisect_left(myList, myNumber)
+    if pos == 0:
+        return myList[0], 0
+    if pos == len(myList):
+        return myList[-1], len(myList)-1
+    before = myList[pos - 1]
+    after = myList[pos]
+    if after - myNumber < myNumber - before:
+       return after, pos
+    else:
+       return before, pos-1
 
 class DataHandler:
     def __init__(self):
@@ -62,7 +82,7 @@ class DataHandler:
         except CvBridgeError as e:
             print(e)
 
-        self.images_l_queue.append((image_l.header.stamp, cv_image))
+        self.images_l_queue.append((image_l.header.stamp.to_sec(), cv_image))
         self.orig_id_last_img_in_q += 1
         if len(self.images_l_queue) > constants.MAX_QUEUE_SIZE:
             self.images_l_queue.pop(0)
@@ -72,7 +92,7 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_r, "rgb8")
         except CvBridgeError as e:
             print(e)
-        self.images_r_queue.append((image_r.header.stamp, cv_image))
+        self.images_r_queue.append((image_r.header.stamp.to_sec(), cv_image))
         if len(self.images_r_queue) > constants.MAX_QUEUE_SIZE:
             self.images_r_queue.pop(0)
 
@@ -81,7 +101,7 @@ class DataHandler:
             cv_image = self.bridge.imgmsg_to_cv2(image_rgb, "rgb8")
         except CvBridgeError as e:
             print(e)
-        self.images_rgb_queue.append((image_rgb.header.stamp, cv_image))
+        self.images_rgb_queue.append((image_rgb.header.stamp.to_sec(), cv_image))
         if len(self.images_rgb_queue) > constants.MAX_QUEUE_SIZE:
             self.images_rgb_queue.pop(0)
 
@@ -152,15 +172,6 @@ class DataHandler:
         rospy.loginfo(matches)
         return matches
 
-    # def get_images(self, image_id):
-    #     return self.image_l[image_id], self.image_r[image_id]
-
-    # def save_separator(self, transform, local_frame_id, other_robot_id, other_robot_frame_id):
-    #     rospy.loginfo("Savng separator")
-    #     self.separators_found.append(
-    #         (transform, local_frame_id, other_robot_id, other_robot_frame_id))
-
-    #     self.kf_already_used.append(local_frame_id)
 
     def get_keyframes(self, odom_info):
         rospy.loginfo("Size of images queue: " +
@@ -171,12 +182,21 @@ class DataHandler:
             else:
                 # Look for the index of the saved image corresponding to the timestamp
                 try:
+                    time_ref = odom_info.header.stamp.to_sec()
                     idx_images_l_q = [y[0] for y in self.images_l_queue].index(
-                        odom_info.header.stamp)
+                        time_ref)
                     idx_images_r_q = [y[0] for y in self.images_r_queue].index(
-                        odom_info.header.stamp)
-                    idx_images_rgb_q = [y[0] for y in self.images_rgb_queue].index(
-                        odom_info.header.stamp)
+                        time_ref)
+
+                    # Find closest time stamps of the rgb data
+                    rgb_stamps = [y[0] for y in self.images_rgb_queue]
+                    stamp, pos = takeClosest(rgb_stamps, time_ref)
+                    if np.abs(stamp-time_ref) > (constants.MAX_TIME_DIFF_RGB_STEREO):
+                        rospy.logwarn(
+                            "Keyframe stereo timestamps too far from the RGB timestamps")
+                        return
+                    else:
+                        idx_images_rgb_q = pos
                 except:
                     rospy.logwarn(
                         "Keyframe timestamp not found in the saved images queue")
@@ -238,12 +258,6 @@ class DataHandler:
             kpts3d_vec.append(resp_feats_and_descs.kpts3D)
             kpts_vec.append(resp_feats_and_descs.kpts)
         
-        # rospy.loginfo("Returning computed matches")
-        # rospy.loginfo(matches_local_resp)
-        # rospy.loginfo(matches_other_resp)
-        # rospy.loginfo(matches_local_resp[0])
-        # rospy.loginfo(matches_other_resp[0])
-        # rospy.loginfo("Done returning")
 
         return FindMatchesResponse(matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
@@ -270,12 +284,6 @@ class DataHandler:
                                        kept_to_id, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
-
-        
-
-            # Don't need to add here since this is not the robot computing the matches
-            # self.local_kf_already_used.append(matched_ids_from[i])
-            # self.other_kf_already_used.append(matched_ids_to[i])
         
 
     def receive_separators_service(self, receive_separators_req):
@@ -307,15 +315,10 @@ class DataHandler:
 
         # Add the separator to the factor graph
         try:
-            # self.s_add_seps_pose_graph(receive_separators_req)
             self.s_add_seps_pose_graph(receive_separators_req.robot_computed_transform_id, kept_from_id,
                                        kept_to_id, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
-
-       
-
-
 
         rospy.loginfo("Currently found " +
                       str(len(self.separators_found))+" separators")
@@ -337,11 +340,5 @@ class DataHandler:
             resp_feats_and_descs = []
         return resp_feats_and_descs
 
-    # def check_already_matched(match_id):
-    #     if match_id in self.kf_already_used:
-    #         return True
-    #     else:
-    #         return False
-
-    def add_kf_pairs_to_ignore(self, id_local, id_other):
+     def add_kf_pairs_to_ignore(self, id_local, id_other):
         self.kf_pairs_ignored.append([id_local, id_other])
