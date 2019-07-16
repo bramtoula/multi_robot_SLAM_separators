@@ -280,7 +280,7 @@ class DataHandler:
 
         try:
             
-            self.s_add_seps_pose_graph(self.local_robot_id, kept_from_id,
+            self.s_add_seps_pose_graph(self.local_robot_id, self.other_robot_id, kept_from_id,
                                        kept_to_id, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
@@ -315,7 +315,7 @@ class DataHandler:
 
         # Add the separator to the factor graph
         try:
-            self.s_add_seps_pose_graph(receive_separators_req.robot_computed_transform_id, kept_from_id,
+            self.s_add_seps_pose_graph(receive_separators_req.robot_from_id, receive_separators_req.robot_to_id, kept_from_id,
                                        kept_to_id, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
@@ -340,5 +340,5 @@ class DataHandler:
             resp_feats_and_descs = []
         return resp_feats_and_descs
 
-     def add_kf_pairs_to_ignore(self, id_local, id_other):
+    def add_kf_pairs_to_ignore(self, id_local, id_other):
         self.kf_pairs_ignored.append([id_local, id_other])

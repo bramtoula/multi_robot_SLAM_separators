@@ -1,4 +1,5 @@
-int8 robot_computed_transform_id
+int8 robot_from_id
+int8 robot_to_id
 int16[] matched_ids_from
 int16[] matched_ids_to
 bool[] transform_est_success

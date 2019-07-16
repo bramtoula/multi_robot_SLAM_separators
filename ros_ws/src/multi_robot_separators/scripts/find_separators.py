@@ -97,7 +97,7 @@ def find_separators():
 
                 # Send the separator found to the other robot concerned
                 try:
-                    s_ans_rec_sep(dataHandler.local_robot_id,matched_ids_from_kept,
+                    s_ans_rec_sep(dataHandler.local_robot_id, dataHandler.other_robot_id,matched_ids_from_kept,
                                     matched_ids_to_kept, transform_est_success, separators_found)
                 except rospy.ServiceException, e:
                     print "Service call failed: %s" % e
