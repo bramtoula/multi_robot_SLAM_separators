@@ -63,6 +63,7 @@ add_service_files(
   GetFeatsAndDesc.srv
   FindMatches.srv
   ReceiveSeparators.srv
+  PoseEstimates.srv
 )
 
 
