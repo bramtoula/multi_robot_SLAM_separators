@@ -46,7 +46,7 @@ class DataHandler:
         self.separators_found = []
         self.local_kf_already_used = []
         self.other_kf_already_used = []
-        self.kf_pairs_ignored = []
+        self.frames_kept_pairs_ignored = []
         self.nb_kf_skipped = 0
         self.original_ids_of_kf = []
         self.orig_id_last_img_in_q = 0
@@ -74,6 +74,10 @@ class DataHandler:
             'add_separators_pose_graph', ReceiveSeparators)
         self.s_get_feats = rospy.ServiceProxy(
             'get_features_and_descriptor', GetFeatsAndDesc)
+
+        self.send_estimates_of_poses = rospy.get_param("use_estimates_of_poses")
+        if self.send_estimates_of_poses:
+            self.s_get_pose_estimates = rospy.ServiceProxy('get_pose_estimates',PoseEstimates)
 
     def __del__(self):
         with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
@@ -148,7 +152,7 @@ class DataHandler:
         if len(self.other_kf_already_used) > 0:
             distances[:,np.array(self.other_kf_already_used)] = np.inf
 
-        for pair in self.kf_pairs_ignored:
+        for pair in self.frames_kept_pairs_ignored:
             distances[pair[0], pair[1]] = np.inf
 
 
@@ -251,7 +255,7 @@ class DataHandler:
         if (len(descriptors_to_comp) > 0) and (len(self.descriptors) > 0):
             matches = self.find_matches(descriptors_to_comp)
         else:
-            return FindMatchesResponse([], [], [], [], [])
+            return FindMatchesResponse([], [], [], [], [],[],[])
 
         matches_computing_robot_resp = []
         matches_querying_robot_resp = []
@@ -267,65 +271,93 @@ class DataHandler:
             kpts3d_vec.append(resp_feats_and_descs.kpts3D)
             kpts_vec.append(resp_feats_and_descs.kpts)
         
+        kf_matched_ids = self.get_kf_ids_from_frames_kept_ids(
+            matches_computing_robot_resp)
+        
+        if self.send_estimates_of_poses:
+            try:
+                pose_estimates = self.s_get_pose_estimates(kf_matched_ids)
+            except rospy.ServiceException, e:
+                print "Service call pose_estimates failed: %s" % e
+            
+        else:
+            pose_estimates = []
+        return FindMatchesResponse(kf_matched_ids, matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec, pose_estimates)
 
-        return FindMatchesResponse(self.get_kf_ids_from_frames_kept_ids(matches_computing_robot_resp), matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
-
-    def found_separators_local(self, matched_ids_from, matched_ids_to, transform_est_success, separators):
+    def found_separators_local(self, kf_ids_from, kf_ids_to, frames_kept_ids_from, frames_kept_ids_to, pose_estimates_from, pose_estimates_to, transform_est_success, separators):
         rospy.loginfo("Separators found using the following KF ids: ")
-        rospy.loginfo(matched_ids_from)
-        rospy.loginfo(matched_ids_to)
+        rospy.loginfo(kf_ids_from)
+        rospy.loginfo(kf_ids_to)
 
-        kept_from_id = []
-        kept_to_id = []
+        kept_frames_kept_from_id = []
+        kept_frames_kept_to_id = []
+        kept_kf_from_id = []
+        kept_kf_to_id = []
         kept_sep = []
+        kept_pose_est_from = []
+        kept_pose_est_to = []
         kept_transform_est_success = []
-        for i in range(len(matched_ids_from)):
+        for i in range(len(kf_ids_from)):
             if transform_est_success[i]:
-                kept_from_id.append(matched_ids_from[i])
-                kept_to_id.append(matched_ids_to[i])
+                kept_kf_from_id.append(kf_ids_from[i])
+                kept_kf_to_id.append(kf_ids_to[i])
                 kept_sep.append(separators[i])
                 kept_transform_est_success.append(transform_est_success[i])
-                self.separators_found.append((matched_ids_from[i], matched_ids_to[i], separators[i]))
+                kept_frames_kept_from_id.append(frames_kept_ids_from[i])
+                kept_frames_kept_to_id.append(frames_kept_ids_to[i])
+                if self.send_estimates_of_poses:
+                    kept_pose_est_from.append(pose_estimates_from[i])
+                    kept_pose_est_to.append(pose_estimates_to[i])
+                self.separators_found.append((kf_ids_from[i], kf_ids_to[i], separators[i]))
 
         try:
             
-            self.s_add_seps_pose_graph(self.local_robot_id, self.other_robot_id, kept_from_id,
-                                       kept_to_id, kept_transform_est_success, kept_sep)
+            self.s_add_seps_pose_graph(self.local_robot_id, self.other_robot_id, kept_kf_from_id,
+                                       kept_kf_to_id, kept_frames_kept_from_id, kept_frames_kept_to_id, kept_pose_est_from, kept_pose_est_to, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
         
 
     def receive_separators_service(self, receive_separators_req):
         rospy.loginfo("Reached receiving separators service, with the following KF ids")
-        rospy.loginfo(receive_separators_req.matched_ids_from)
-        rospy.loginfo(receive_separators_req.matched_ids_to)
+        rospy.loginfo(receive_separators_req.kf_ids_from)
+        rospy.loginfo(receive_separators_req.kf_ids_to)
 
-        kept_from_id = []
-        kept_to_id = []
+        kept_frames_kept_from_id = []
+        kept_frames_kept_to_id = []
+        kept_kf_from_id = []
+        kept_kf_to_id = []
         kept_sep = []
+        kept_pose_est_from = []
+        kept_pose_est_to = []
         kept_transform_est_success = []
 
-        for i in range(len(receive_separators_req.matched_ids_from)):
+        for i in range(len(receive_separators_req.kf_ids_from)):
             if receive_separators_req.transform_est_success[i]:
-
-                kept_from_id.append(receive_separators_req.matched_ids_from[i])
-                kept_to_id.append(receive_separators_req.matched_ids_to[i])
+                
+                kept_frames_kept_from_id.append(receive_separators_req.frames_kepts_ids_from[i])
+                kept_frames_kept_to_id.append(receive_separators_req.frames_kepts_ids_to[i])
+                kept_kf_from_id.append(receive_separators_req.kf_ids_from[i])
+                kept_kf_to_id.append(receive_separators_req.kf_ids_to[i])
                 kept_sep.append(receive_separators_req.separators[i])
                 kept_transform_est_success.append(receive_separators_req.transform_est_success[i])
+                if self.send_estimates_of_poses:
+                    kept_pose_est_from.append(pose_estimates_from[i])
+                    kept_pose_est_to.append(pose_estimates_to[i])
 
                 self.separators_found.append(
-                    (receive_separators_req.matched_ids_to[i], receive_separators_req.matched_ids_from[i], receive_separators_req.separators[i]))
+                    (receive_separators_req.kf_ids_to[i], receive_separators_req.kf_ids_from[i], receive_separators_req.separators[i]))
                 self.local_kf_already_used.append(
-                    receive_separators_req.matched_ids_to[i])
+                    receive_separators_req.frames_kepts_ids_to[i])
                 self.other_kf_already_used.append(
-                    receive_separators_req.matched_ids_from[i])
+                    receive_separators_req.frames_kepts_ids_from[i])
             else:
-                self.add_kf_pairs_to_ignore(receive_separators_req.matched_ids_to[i],receive_separators_req.matched_ids_from[i])
+                self.add_frames_kept_pairs_to_ignore(
+                    receive_separators_req.frames_kepts_ids_to[i], receive_separators_req.frames_kepts_ids_from[i])
 
         # Add the separator to the factor graph
         try:
-            self.s_add_seps_pose_graph(receive_separators_req.robot_from_id, receive_separators_req.robot_to_id, kept_from_id,
-                                       kept_to_id, kept_transform_est_success, kept_sep)
+            self.s_add_seps_pose_graph(receive_separators_req.robot_from_id, receive_separators_req.robot_to_id, kept_kf_from_id, kept_kf_to_id, kept_frames_kept_from_id, kept_frames_kept_to_id, kept_pose_est_from, kept_pose_est_to, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e
 
@@ -345,12 +377,12 @@ class DataHandler:
         try:
             resp_feats_and_descs = self.s_get_feats(img_l_msg, img_r_msg)
         except rospy.ServiceException, e:
-            print "Service call failed: %s" % e
+            print "Service call get_features_and_descriptor failed: %s" % e
             resp_feats_and_descs = []
         return resp_feats_and_descs
 
-    def add_kf_pairs_to_ignore(self, id_local, id_other):
-        self.kf_pairs_ignored.append([id_local, id_other])
+    def add_frames_kept_pairs_to_ignore(self, id_local, id_other):
+        self.frames_kept_pairs_ignored.append([id_local, id_other])
 
     def get_kf_ids_from_frames_kept_ids(self,frames_kept_ids):
         return list(np.array(self.kf_ids_of_frames_kept)[frames_kept_ids])

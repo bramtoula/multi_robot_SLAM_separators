@@ -97,10 +97,10 @@ bool FactorGraphData::addSeparators(multi_robot_separators::ReceiveSeparators::R
 
     unsigned char robot_from_id_char_ = req.robot_from_id + 'a';
     unsigned char robot_to_id_char_ = req.robot_to_id + 'a';
-    for (int idx = 0; idx < req.matched_ids_from.size(); idx++)
+    for (int idx = 0; idx < req.kf_ids_from.size(); idx++)
     {
-        robot_symbol_from = gtsam::Symbol(robot_from_id_char_, req.matched_ids_from[idx]);
-        robot_symbol_to = gtsam::Symbol(robot_to_id_char_, req.matched_ids_to[idx]);
+        robot_symbol_from = gtsam::Symbol(robot_from_id_char_, req.kf_ids_from[idx]);
+        robot_symbol_to = gtsam::Symbol(robot_to_id_char_, req.kf_ids_to[idx]);
 
         covarianceToMatrix(req.separators[idx].covariance, covariance_mat);
 

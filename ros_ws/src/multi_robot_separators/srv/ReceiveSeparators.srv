@@ -1,7 +1,11 @@
 int8 robot_from_id
 int8 robot_to_id
-int16[] matched_ids_from
-int16[] matched_ids_to
+int16[] kf_ids_from
+int16[] kf_ids_to
+int16[] frames_kepts_ids_from
+int16[] frames_kepts_ids_to
+geometry_msgs/PoseWithCovariance[] pose_estimates_from
+geometry_msgs/PoseWithCovariance[] pose_estimates_to
 bool[] transform_est_success
 geometry_msgs/PoseWithCovariance[] separators
 ---

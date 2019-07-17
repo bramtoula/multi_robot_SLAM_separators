@@ -29,6 +29,9 @@
     <param name="translation_std" type="double" value="0.3" />
     <param name="rotation_std" type="double" value="0.05" />
 
+   <!-- Also send estimates of poses with separators found. Requires to have a service to compute those advertised -->
+    <param name="use_estimates_of_poses" type="bool" value="false" /> 
+    
     <!-- Remapping image topics -->
     <remap from="rgb/image_rect" to="kitti/camera_color_left/image_rect"/>
     <remap from="left/image_rect" to="kitti/camera_color_left/image_rect"/>

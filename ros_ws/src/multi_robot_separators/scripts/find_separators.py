@@ -32,12 +32,15 @@ def find_separators():
         'find_matches_compute', FindMatches, dataHandler.find_matches_service)
     s_receive_separators = rospy.Service(
         'receive_separators_py', ReceiveSeparators, dataHandler.receive_separators_service)
+
+    # Find services that need to be called
     s_ans_est_transform = rospy.ServiceProxy(
         'estimate_transformation', EstTransform)
     s_find_matches_query = rospy.ServiceProxy(
         'find_matches_query', FindMatches)
     s_ans_rec_sep = rospy.ServiceProxy(
         'found_separators_send', ReceiveSeparators)
+
     i = 0
     while not rospy.is_shutdown():
         # main loop
@@ -51,10 +54,12 @@ def find_separators():
         if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
             if i % 20 and (len(dataHandler.descriptors) > 0):
                 # resp_matches = dataHandler.call_find_matches_serv()
-                frames_kept_ids_kept = []
-                matched_ids_to_kept = []
+                frames_kept_ids_from_kept = []
+                frames_kept_ids_to_kept = []
+                kf_ids_to_kept = []
                 transform_est_success = []
                 separators_found = []
+                pose_estimates_to_kept = []
 
                 # Call service to find matches and corresponding keypoints and geometric descriptors
                 try:
@@ -76,7 +81,7 @@ def find_separators():
                         res_transform = s_ans_est_transform(
                             local_features_and_desc.descriptors, res_matches.descriptors_vec[i], local_features_and_desc.kpts3D, res_matches.kpts3D_vec[i], local_features_and_desc.kpts, res_matches.kpts_vec[i])
                     except rospy.ServiceException, e:
-                        print "Service call failed: %s" % e
+                        print "Service call estimate_transformation failed: %s" % e
                         continue
 
                     # Check if transform was successfully computed
@@ -85,24 +90,38 @@ def find_separators():
                     else:
                         transform_est_success.append(False)
 
-                    frames_kept_ids_kept.append(
+                    frames_kept_ids_from_kept.append(
                         res_matches.frames_kept_ids_querying_robot[i])
-                    matched_ids_from_kept = dataHandler.get_kf_ids_from_frames_kept_ids(
-                        frames_kept_ids_kept)
-                    matched_ids_to_kept.append(
+                    frames_kept_ids_to_kept.append(res_matches.frames_kept_ids_computing_robot[i])
+
+                    kf_ids_to_kept.append(
                         res_matches.kf_ids_computing_robot[i])
 
                     separators_found.append(res_transform.poseWithCov)
 
+                    if dataHandler.send_estimates_of_poses:
+                        pose_estimates_to_kept.append(res_matches.pose_estimates[i])
+
+                kf_ids_from_kept = dataHandler.get_kf_ids_from_frames_kept_ids(
+                    frames_kept_ids_from_kept)
+
+                if dataHandler.send_estimates_of_poses:
+                    try:
+                        pose_estimates_from_kept = dataHandler.s_get_pose_estimates(
+                            kf_ids_from_kept)
+                    except rospy.ServiceException, e:
+                        print "Service call pose_estimates failed: %s" % e
+                else:
+                    pose_estimates_from_kept = []
                 # Add the separator to the factor graph and save it
-                dataHandler.found_separators_local(matched_ids_from_kept, matched_ids_to_kept, transform_est_success,separators_found)
+                dataHandler.found_separators_local(kf_ids_from_kept, kf_ids_to_kept, frames_kept_ids_from_kept,  frames_kept_ids_to_kept, pose_estimates_from_kept, pose_estimates_to_kept, transform_est_success, separators_found)
 
                 # Send the separator found to the other robot concerned
                 try:
-                    s_ans_rec_sep(dataHandler.local_robot_id, dataHandler.other_robot_id,matched_ids_from_kept,
-                                    matched_ids_to_kept, transform_est_success, separators_found)
+                    s_ans_rec_sep(dataHandler.local_robot_id, dataHandler.other_robot_id,kf_ids_from_kept,
+                                  kf_ids_to_kept, frames_kept_ids_from_kept, frames_kept_ids_to_kept, pose_estimates_from_kept, pose_estimates_to_kept, transform_est_success, separators_found)
                 except rospy.ServiceException, e:
-                    print "Service call failed: %s" % e
+                    print "Service call found_separators_send failed: %s" % e
         rate.sleep()
 
 

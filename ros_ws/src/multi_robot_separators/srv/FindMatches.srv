@@ -1,7 +1,9 @@
 float64[] netvlad_descriptors
 ---
 int16[] kf_ids_computing_robot
+int16[] frames_kept_ids_computing_robot
 int16[] frames_kept_ids_querying_robot
 Descriptors[] descriptors_vec
 KeyPoint3DVec[] kpts3D_vec
 KeyPointVec[] kpts_vec
+geometry_msgs/PoseWithCovariance[] pose_estimates
