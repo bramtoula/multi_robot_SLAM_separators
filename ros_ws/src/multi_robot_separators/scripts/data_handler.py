@@ -50,6 +50,8 @@ class DataHandler:
         self.nb_kf_skipped = 0
         self.original_ids_of_kf = []
         self.orig_id_last_img_in_q = 0
+        self.nb_kf_odom = 0
+        self.kf_ids_of_frames_kept = []
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -59,7 +61,9 @@ class DataHandler:
 
         saver = tf.train.Saver()
 
-        self.sess = tf.Session()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        self.sess = tf.Session(config=config)
         saver.restore(self.sess, nets.defaultCheckpoint())
 
         self.bridge = CvBridge()
@@ -177,6 +181,7 @@ class DataHandler:
         rospy.loginfo("Size of images queue: " +
                       str(len(self.images_l_queue))+"\n")
         if odom_info.keyFrameAdded:
+            self.nb_kf_odom += 1
             if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
                 self.nb_kf_skipped += 1
             else:
@@ -224,6 +229,10 @@ class DataHandler:
                 # Reset the counter of KF skipped
                 self.nb_kf_skipped = 0
 
+                # Keep the id based on all the kf seen by the odometry
+                self.kf_ids_of_frames_kept.append(self.nb_kf_odom-1)
+
+
                 # Store the original frame id of the kf added
                 self.original_ids_of_kf.append(
                     self.orig_id_last_img_in_q - len(self.images_l_queue))
@@ -259,7 +268,7 @@ class DataHandler:
             kpts_vec.append(resp_feats_and_descs.kpts)
         
 
-        return FindMatchesResponse(matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
+        return FindMatchesResponse(self.get_kf_ids_from_frames_kept_ids(matches_computing_robot_resp), matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec)
 
     def found_separators_local(self, matched_ids_from, matched_ids_to, transform_est_success, separators):
         rospy.loginfo("Separators found using the following KF ids: ")
@@ -342,3 +351,6 @@ class DataHandler:
 
     def add_kf_pairs_to_ignore(self, id_local, id_other):
         self.kf_pairs_ignored.append([id_local, id_other])
+
+    def get_kf_ids_from_frames_kept_ids(self,frames_kept_ids):
+        return list(np.array(self.kf_ids_of_frames_kept)[frames_kept_ids])

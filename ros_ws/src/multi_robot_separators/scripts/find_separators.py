@@ -51,7 +51,7 @@ def find_separators():
         if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
             if i % 20 and (len(dataHandler.descriptors) > 0):
                 # resp_matches = dataHandler.call_find_matches_serv()
-                matched_ids_from_kept = []
+                frames_kept_ids_kept = []
                 matched_ids_to_kept = []
                 transform_est_success = []
                 separators_found = []
@@ -66,10 +66,10 @@ def find_separators():
                     break
 
                 # If matches are found, compute the separators, send them back, and add them to the pose graph
-                for i in range(len(res_matches.matched_ids_computing_robot)):
+                for i in range(len(res_matches.kf_ids_computing_robot)):
                     # Compute geometric features of the local frames that were matched. Use matched_ids_other since it is from the point of view of the other robot.
                     local_features_and_desc = dataHandler.get_geom_features(
-                        res_matches.matched_ids_querying_robot[i])
+                        res_matches.frames_kept_ids_querying_robot[i])
 
                     try:
                         # Transform computed FROM local_features_and_desc TO res_matches (other robot)
@@ -85,10 +85,12 @@ def find_separators():
                     else:
                         transform_est_success.append(False)
 
-                    matched_ids_from_kept.append(
-                        res_matches.matched_ids_querying_robot[i])
+                    frames_kept_ids_kept.append(
+                        res_matches.frames_kept_ids_querying_robot[i])
+                    matched_ids_from_kept = dataHandler.get_kf_ids_from_frames_kept_ids(
+                        frames_kept_ids_kept)
                     matched_ids_to_kept.append(
-                        res_matches.matched_ids_computing_robot[i])
+                        res_matches.kf_ids_computing_robot[i])
 
                     separators_found.append(res_transform.poseWithCov)
 
