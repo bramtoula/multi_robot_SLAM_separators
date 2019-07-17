@@ -100,9 +100,9 @@ add_library(multi_robot_separators
 target_link_libraries(multi_robot_separators ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam)
 add_dependencies(multi_robot_separators multi_robot_separators_gencpp)
 
-add_executable(stereo_cam_geometric_tools src/stereoCamGeometricTools.cpp)
+add_executable(stereo_cam_geometric_tools src/stereoCamGeometricTools.cpp src/myRegistration.cpp src/myRegistrationVis.cpp src/MsgConversion.cpp)
 target_link_libraries(stereo_cam_geometric_tools ${catkin_LIBRARIES} ${RTABMap_LIBRARIES} ${OpenCV_LIBRARIES} ${QT_LIBRARIES} ${PCL_LIBRARIES} gtsam multi_robot_separators)
-add_dependencies(stereo_cam_geometric_tools multi_robot_separators_gencpp)
+add_dependencies(stereo_cam_geometric_tools ${catkin_EXPORTED_TARGETS} multi_robot_separators_gencpp)
 
 add_executable(factor_graph src/factorGraph.cpp)
 target_link_libraries(factor_graph ${catkin_LIBRARIES} gtsam multi_robot_separators)
