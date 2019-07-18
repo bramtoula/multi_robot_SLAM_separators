@@ -108,7 +108,7 @@ def find_separators():
                 if dataHandler.send_estimates_of_poses:
                     try:
                         pose_estimates_from_kept = dataHandler.s_get_pose_estimates(
-                            kf_ids_from_kept)
+                            kf_ids_from_kept).pose_estimates
                     except rospy.ServiceException, e:
                         print "Service call pose_estimates failed: %s" % e
                 else:

@@ -273,10 +273,10 @@ class DataHandler:
         
         kf_matched_ids = self.get_kf_ids_from_frames_kept_ids(
             matches_computing_robot_resp)
-        
+
         if self.send_estimates_of_poses:
             try:
-                pose_estimates = self.s_get_pose_estimates(kf_matched_ids)
+                pose_estimates = self.s_get_pose_estimates(kf_matched_ids).pose_estimates
             except rospy.ServiceException, e:
                 print "Service call pose_estimates failed: %s" % e
             
@@ -311,7 +311,7 @@ class DataHandler:
                 self.separators_found.append((kf_ids_from[i], kf_ids_to[i], separators[i]))
 
         try:
-            
+            rospy.logwarn("Adding to myself")
             self.s_add_seps_pose_graph(self.local_robot_id, self.other_robot_id, kept_kf_from_id,
                                        kept_kf_to_id, kept_frames_kept_from_id, kept_frames_kept_to_id, kept_pose_est_from, kept_pose_est_to, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
@@ -342,8 +342,8 @@ class DataHandler:
                 kept_sep.append(receive_separators_req.separators[i])
                 kept_transform_est_success.append(receive_separators_req.transform_est_success[i])
                 if self.send_estimates_of_poses:
-                    kept_pose_est_from.append(pose_estimates_from[i])
-                    kept_pose_est_to.append(pose_estimates_to[i])
+                    kept_pose_est_from.append(receive_separators_req.pose_estimates_from[i])
+                    kept_pose_est_to.append(receive_separators_req.pose_estimates_to[i])
 
                 self.separators_found.append(
                     (receive_separators_req.kf_ids_to[i], receive_separators_req.kf_ids_from[i], receive_separators_req.separators[i]))
@@ -357,6 +357,7 @@ class DataHandler:
 
         # Add the separator to the factor graph
         try:
+            rospy.logwarn("Adding to other")
             self.s_add_seps_pose_graph(receive_separators_req.robot_from_id, receive_separators_req.robot_to_id, kept_kf_from_id, kept_kf_to_id, kept_frames_kept_from_id, kept_frames_kept_to_id, kept_pose_est_from, kept_pose_est_to, kept_transform_est_success, kept_sep)
         except rospy.ServiceException, e:
             print "Service call add sep to pose graph failed: %s" % e

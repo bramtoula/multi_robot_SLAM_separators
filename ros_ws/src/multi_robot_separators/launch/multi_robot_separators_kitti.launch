@@ -1,14 +1,14 @@
 <launch>
 <!-- Change these parameters -->
 <arg name="local_robot_id" default="0" />  
-<arg name="other_robot_id" default="1" />  
+<arg name="other_robot_id" default="0" />  
 <arg name="frame_id" default="camera_color_left" />  
 <arg name="estimate_stereo_transform_from_tf" default="false" />  
 
 
 <!-- Play the bag within the namespace -->
-<arg name="node_start_delay" default="30.0" />  
-<node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="/kitti_data_orig/kitti_data_odometry_color_sequence_00_part1.bag" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+<arg name="node_start_delay" default="10.0" />  
+<node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="/root/multi_robot_SLAM_separators/bags/kitti_data_odometry_color_sequence_00_part1.bag -r 0.2" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
   <remap from="/kitti/camera_color_left/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect"/>
   <remap from="/kitti/camera_color_right/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_right/image_rect"/>
   <remap from="/kitti/camera_color_left/camera_info" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/camera_info"/>
@@ -30,7 +30,7 @@
     <param name="rotation_std" type="double" value="0.05" />
 
    <!-- Also send estimates of poses with separators found. Requires to have a service to compute those advertised -->
-    <param name="use_estimates_of_poses" type="bool" value="false" /> 
+    <param name="use_estimates_of_poses" type="bool" value="true" /> 
     
     <!-- Remapping image topics -->
     <remap from="rgb/image_rect" to="kitti/camera_color_left/image_rect"/>
@@ -42,7 +42,7 @@
     <!-- Nodes to run -->
     <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools"/>
     <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators"/>
-    <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/>
+    <!-- <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/> -->
     <node pkg="multi_robot_separators" type="communication" name="communication"/>
 
     <!-- Stereo Odometry -->   
