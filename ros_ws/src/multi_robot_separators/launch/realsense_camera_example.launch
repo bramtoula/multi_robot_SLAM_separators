@@ -1,0 +1,44 @@
+<launch>
+    <arg name="local_robot_id" default="0" />
+    <arg name="other_robot_id" default="0" />
+
+    <arg name="topic_left_image_rect" value="/robot_$(arg local_robot_id)/camera/infra1/image_rect_raw"/>
+    <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/camera/infra2/image_rect_rawt"/>
+    <arg name="topic_left_camera_info" value="/robot_$(arg local_robot_id)/camera/infra1/camera_info"/>
+    <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/camera/infra2/camera_info"/>
+    <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/camera/color/image_raw" />
+
+    <!-- Play the bag within the namespace -->
+
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+    <!-- all vars that included.launch requires must be set -->
+        <arg name="color_fps" value="15"/>
+        <arg name="infra1_fps" value="15"/>
+        <arg name="infra2_fps" value="15"/>
+
+        <remap from="/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
+        <remap from="/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
+        <remap from="/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
+        <remap from="/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
+        <remap from="/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/> 
+    </include>
+
+
+    <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
+    <!-- all vars that included.launch requires must be set -->
+        <arg name="other_robot_id" value="$(arg other_robot_id)"/>
+        <arg name="local_robot_id" value="$(arg local_robot_id)"/>
+        <arg name="frame_id" value="camera_link"/>
+        <arg name="estimate_stereo_transform_from_tf" value="true" />
+
+        <arg name="topic_left_image_rect" value="$(arg topic_left_image_rect)"/>
+        <arg name="topic_right_image_rect" value="$(arg topic_right_image_rect)"/>
+        <arg name="topic_left_camera_info" value="$(arg topic_left_camera_info)"/>
+        <arg name="topic_right_camera_info" value="$(arg topic_right_camera_info)"/>
+        <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
+
+        <arg name="use_estimates_of_poses" value="false" />
+    </include>
+</launch>
+
+
