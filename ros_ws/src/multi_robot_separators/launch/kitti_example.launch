@@ -1,0 +1,32 @@
+<launch>
+    <arg name="local_robot_id" default="0" />  
+    <arg name="other_robot_id" default="0" />  
+
+    <!-- Play the bag within the namespace -->
+    <arg name="node_start_delay" default="10.0" />  
+    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="/datasets/kitti/dataset/kitti_data_odometry_color_sequence_00_part1.bag -r 0.2" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+    <remap from="/kitti/camera_color_left/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect"/>
+    <remap from="/kitti/camera_color_right/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_right/image_rect"/>
+    <remap from="/kitti/camera_color_left/camera_info" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/camera_info"/>
+    <remap from="/kitti/camera_color_right/camera_info" to="/robot_$(arg local_robot_id)/kitti/camera_color_right/camera_info"/>
+    </node>
+
+
+    <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
+    <!-- all vars that included.launch requires must be set -->
+        <arg name="other_robot_id" value="$(arg local_robot_id)"/>
+        <arg name="local_robot_id" value="$(arg other_robot_id)"/>
+        <arg name="frame_id" value="camera_color_left"/>
+        <arg name="estimate_stereo_transform_from_tf" value="false" />
+
+        <arg name="topic_left_image_rect" value="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect"/>
+        <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/kitti/camera_color_right/image_rect"/>
+        <arg name="topic_left_camera_info" value="/robot_$(arg local_robot_id)/kitti/camera_color_left/camera_info"/>
+        <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/kitti/camera_color_right/camera_info"/>
+        <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect" />
+
+        <arg name="use_estimates_of_poses" value="false" />
+    </include>
+</launch>
+
+
