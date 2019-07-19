@@ -4,7 +4,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 
-RUN git clone https://github.com/bramtoula/buildLibrealsense2TX2.git && \
+RUN git clone https://github.com/lajoiepy/buildLibrealsense2TX2.git && \
     cd buildLibrealsense2TX2 && \
     chmod +x installLibrealsense.sh && \
     sed -i -e 's/sudo//g' ./installLibrealsense.sh && \
