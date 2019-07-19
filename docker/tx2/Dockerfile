@@ -40,7 +40,7 @@ RUN apt-get update && apt-get install -y \
     ros-melodic-rtabmap-ros \
     && apt-get remove -y \
     ros-melodic-rtabmap \
-    && rm -rf /var/lib/apt/lists
+    && rm -rf /var/lib/apt/lists/*
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
