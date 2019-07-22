@@ -51,3 +51,6 @@ RUN apt-get update && \
     catkin_make install && \
     echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
     source ~/.bashrc
+
+RUN cd ~/catkin_ws/src/realsense-ros/realsense2_camera/launch/ && \
+    git clone https://github.com/lajoiepy/multi_robot_slam_camera_launch.git
