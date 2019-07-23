@@ -80,6 +80,7 @@ class DataHandler:
             self.s_get_pose_estimates = rospy.ServiceProxy('get_pose_estimates',PoseEstimates)
 
     def __del__(self):
+        self.sess.close()
         with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
             for id in self.original_ids_of_kf:
                 file.write("%i\n" % id)
