@@ -15,7 +15,7 @@
 <arg name="translation_std" default="0.3" />
 <arg name="rotation_std" default="0.05" />
 
-<arg name="use_estimates_of_poses" default="false" />
+<arg name="use_estimates_of_poses" default="true" />
 
 <!-- Change the robot id here too! -->
   <group ns="robot_$(arg local_robot_id)">

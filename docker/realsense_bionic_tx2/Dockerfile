@@ -34,6 +34,9 @@ RUN git clone https://github.com/lajoiepy/buildLibrealsense2TX2.git && \
 #     apt-get install -y librealsense2-dbg
 
 RUN rm /bin/sh && ln -s /bin/bash /bin/sh
+
+ARG rebuild_realsense_ros=unknown
+
 RUN apt-get update && \
     apt-get install -y --no-install-recommends ros-melodic-ddynamic-reconfigure ros-melodic-diagnostic-updater && \
     rm -rf /var/lib/apt/lists/* && \
