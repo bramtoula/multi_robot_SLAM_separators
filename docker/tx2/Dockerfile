@@ -154,7 +154,7 @@ ARG repull_and_build=0
 # -------------------------------------------------------------------------------------------------------------#
 
 RUN cd multi_robot_SLAM_separators/ros_ws/ && \
-    git pull && \
+    git pull origin master && \
     source /opt/ros/melodic/setup.bash && \
     catkin build && \
     cd ~/rdpgo_ws/src/robust_distributed_slam_module && \
@@ -168,3 +168,10 @@ RUN cd multi_robot_SLAM_separators/ros_ws/ && \
     catkin build && \
     cd ~/rdpgo_ws/src/robust_distributed_slam_module/scripts &&\
     bzzc ros_slam.bzz
+
+##################################################### Setup Entrypoint ##################################################### 
+
+COPY entrypoint.sh entrypoint.sh
+RUN chmod +x entrypoint.sh
+ENTRYPOINT ["/root/entrypoint.sh"]
+CMD ["0", "1", "optimization"]
