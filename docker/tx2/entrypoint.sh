@@ -1,21 +1,24 @@
 #!/bin/bash
 
-export ROS_IP=192.168.12.10$1
-export ROS_MASTER_URI=http://192.168.12.100:11311
+export ROS_IP=$(echo $(hostname -I) | cut -d' ' -f 2)
+export ROS_MASTER_URI=http://192.168.12.$1:11311
 
 source "/root/rdpgo_ws/devel/setup.bash"
 
-case "$3" in
+case "$4" in
         optimization)
-            roslaunch robust_distributed_slam_module generic_robot_slam.launch local_robot_id:=$1 other_robot_id:=$2 port:=2458$1 --screen
+            roslaunch robust_distributed_slam_module generic_robot_slam.launch local_robot_id:=$2 other_robot_id:=$3 port:=2458$2 --screen
             ;;
          
         separators)
-            roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$1 other_robot_id:=$2 --screen
+            roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$2 other_robot_id:=$3 --screen
             ;;
-         
+
+        bash)
+            /bin/bash
+            ;;
         *)
-            echo $"Usage: $3 {optimization|separators}"
+            echo $"Usage: $4 {optimization|separators|bash}"
             exit 1
  
 esac
