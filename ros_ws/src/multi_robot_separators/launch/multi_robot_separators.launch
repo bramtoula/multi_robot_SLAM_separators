@@ -53,7 +53,7 @@
     <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep $(arg stereo_odom_start_delay); $0 $@' " >
       <param name="frame_id"      type="string" value="$(arg frame_id)"/>
       <param name="estimate_stereo_transform_from_tf" type="bool" value="$(arg estimate_stereo_transform_from_tf)"/>
-      <param name="Odom/Strategy"      type="string" value="1"/> <!--  0=Frame-to-Map, 1=Frame=to=Frame-->
+      <param name="Odom/Strategy"      type="string" value="0"/> <!--  0=Frame-to-Map, 1=Frame=to=Frame-->
         <!-- <param name="Odom/ImageBufferSize"  type="string" value="0"/>  -->
         <!-- <param name="Vis/EstimationType" type="string" value="1"/> 0=3D->3D 1=3D->2D (PnP) -->
         <!-- <param name="Vis/PnPFlags"       type="string" value="0"/> -->
