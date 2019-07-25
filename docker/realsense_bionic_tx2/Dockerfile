@@ -42,4 +42,4 @@ COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 WORKDIR /
 ENTRYPOINT ["/entrypoint.sh"]
-CMD ["0"]
+CMD ["100", "0", "camera"]
