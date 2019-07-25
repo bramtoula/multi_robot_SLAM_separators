@@ -174,4 +174,4 @@ RUN cd multi_robot_SLAM_separators/ros_ws/ && \
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
-CMD ["0", "1", "optimization"]
+CMD ["100", "0", "1", "bash"]
