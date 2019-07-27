@@ -14,6 +14,10 @@ case "$4" in
             roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$2 other_robot_id:=$3 --screen
             ;;
 
+        bag)
+            roslaunch multi_robot_separators realsense_bag_example.launch local_robot_id:=$2 other_robot_id:=$3 bag:=$5 --screen
+            ;;
+
         bash)
             /bin/bash
             ;;
