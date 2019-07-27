@@ -24,8 +24,8 @@
 
     <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
     <!-- all vars that included.launch requires must be set -->
-        <arg name="other_robot_id" value="$(arg local_robot_id)"/>
-        <arg name="local_robot_id" value="$(arg other_robot_id)"/>
+        <arg name="other_robot_id" value="$(arg other_robot_id)"/>
+        <arg name="local_robot_id" value="$(arg local_robot_id)"/>
         <arg name="frame_id" value="camera_link"/>
         <arg name="estimate_stereo_transform_from_tf" value="true" />
 
@@ -36,6 +36,7 @@
         <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
 
         <arg name="use_estimates_of_poses" value="false" />
+	<arg name="approx_sync" value="true" />
     </include>
 </launch>
 
