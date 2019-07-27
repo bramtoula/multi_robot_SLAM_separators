@@ -11,6 +11,13 @@ case "$4" in
             ;;
          
         separators)
+            if [ "$5" == "record" ]
+	    then
+            	rosbag record -o /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/ /robot_$2/camera/color/camera_info /robot_$2/camera/color/image_raw \
+                          /robot_$2/camera/infra1/camera_info /robot_$2/camera/infra1/image_rect_raw \
+                          /robot_$2/camera/infra2/camera_info /robot_$2/camera/infra2/image_rect_raw \
+                          /tf /tf_static &
+            fi
             roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$2 other_robot_id:=$3 --screen
             ;;
 
