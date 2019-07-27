@@ -15,7 +15,7 @@ case "$4" in
             ;;
 
         bag)
-            roslaunch multi_robot_separators realsense_bag_example.launch local_robot_id:=$2 other_robot_id:=$3 bag:=$5 --screen
+            roslaunch multi_robot_separators realsense_bag_example.launch local_robot_id:=$2 other_robot_id:=$3 bag:=$5 recorded_id:=$6 --screen
             ;;
 
         bash)

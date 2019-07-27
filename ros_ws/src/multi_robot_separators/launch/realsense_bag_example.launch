@@ -8,16 +8,17 @@
     <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/camera/infra2/camera_info"/>
     <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/camera/color/image_raw" />
 
-    <arg name="bag" value="/datasets/ours_parking_lot/forward_1.bag" />
+    <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
+    <arg name="recorded_id" default="0" />
 
     <!-- Play the bag within the namespace -->
     <arg name="node_start_delay" default="10.0" />
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
-        <remap from="/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
-        <remap from="/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
-        <remap from="/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
-        <remap from="/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
-        <remap from="/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
     </node>
 
 
