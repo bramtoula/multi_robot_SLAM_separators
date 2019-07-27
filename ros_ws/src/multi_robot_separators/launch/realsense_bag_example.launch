@@ -3,7 +3,7 @@
     <arg name="other_robot_id" default="0" />
 
     <arg name="topic_left_image_rect" value="/robot_$(arg local_robot_id)/camera/infra1/image_rect_raw"/>
-    <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/camera/infra2/image_rect_rawt"/>
+    <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/camera/infra2/image_rect_raw"/>
     <arg name="topic_left_camera_info" value="/robot_$(arg local_robot_id)/camera/infra1/camera_info"/>
     <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/camera/infra2/camera_info"/>
     <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/camera/color/image_raw" />
