@@ -1,0 +1,43 @@
+<launch>
+    <arg name="local_robot_id" default="0" />
+    <arg name="other_robot_id" default="0" />
+
+    <arg name="topic_left_image_rect" value="/robot_$(arg local_robot_id)/camera/infra1/image_rect_raw"/>
+    <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/camera/infra2/image_rect_raw"/>
+    <arg name="topic_left_camera_info" value="/robot_$(arg local_robot_id)/camera/infra1/camera_info"/>
+    <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/camera/infra2/camera_info"/>
+    <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/camera/color/image_raw" />
+
+    <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
+    <arg name="recorded_id" default="0" />
+
+    <!-- Play the bag within the namespace -->
+    <arg name="node_start_delay" default="10.0" />
+    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+        <remap from="/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
+        <remap from="/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
+        <remap from="/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
+        <remap from="/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
+        <remap from="/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
+    </node>
+
+
+    <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
+    <!-- all vars that included.launch requires must be set -->
+        <arg name="other_robot_id" value="$(arg other_robot_id)"/>
+        <arg name="local_robot_id" value="$(arg local_robot_id)"/>
+        <arg name="frame_id" value="camera_link"/>
+        <arg name="estimate_stereo_transform_from_tf" value="true" />
+
+        <arg name="topic_left_image_rect" value="$(arg topic_left_image_rect)"/>
+        <arg name="topic_right_image_rect" value="$(arg topic_right_image_rect)"/>
+        <arg name="topic_left_camera_info" value="$(arg topic_left_camera_info)"/>
+        <arg name="topic_right_camera_info" value="$(arg topic_right_camera_info)"/>
+        <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
+
+        <arg name="use_estimates_of_poses" value="false" />
+	<arg name="approx_sync" value="false" />
+    </include>
+</launch>
+
+
