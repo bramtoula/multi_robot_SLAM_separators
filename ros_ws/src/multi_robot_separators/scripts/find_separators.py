@@ -55,12 +55,12 @@ def find_separators():
         if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
             if i % 20 and (len(dataHandler.descriptors) > 0):
                 # resp_matches = dataHandler.call_find_matches_serv()
-                frames_kept_ids_from_kept = []
-                frames_kept_ids_to_kept = []
-                kf_ids_to_kept = []
-                transform_est_success = []
-                separators_found = []
-                pose_estimates_to_kept = []
+                frames_kept_ids_from_kept = collections.deque()
+                frames_kept_ids_to_kept = collections.deque()
+                kf_ids_to_kept = collections.deque()
+                transform_est_success = collections.deque()
+                separators_found = collections.deque()
+                pose_estimates_to_kept = collections.deque()
                 rospy.logwarn("find : check 2")
                 # Call service to find matches and corresponding keypoints and geometric descriptors
                 try:
@@ -114,7 +114,7 @@ def find_separators():
                     except rospy.ServiceException, e:
                         print "Service call pose_estimates failed: %s" % e
                 else:
-                    pose_estimates_from_kept = []
+                    pose_estimates_from_kept = collections.deque()
                 rospy.logwarn("find : check 13")
                 # Add the separator to the factor graph and save it
                 dataHandler.found_separators_local(kf_ids_from_kept, kf_ids_to_kept, frames_kept_ids_from_kept,  frames_kept_ids_to_kept, pose_estimates_from_kept, pose_estimates_to_kept, transform_est_success, separators_found)
