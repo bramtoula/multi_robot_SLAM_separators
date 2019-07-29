@@ -10,7 +10,7 @@ import numpy as np
 from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from rtabmap_ros.msg import OdomInfo
-from collections import deque
+import collections
 
 from scipy.spatial.distance import cdist
 

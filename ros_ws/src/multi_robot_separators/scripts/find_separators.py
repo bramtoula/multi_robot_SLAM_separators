@@ -8,7 +8,7 @@ from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from data_handler import DataHandler
 from rtabmap_ros.msg import OdomInfo
-
+import collections
 import random
 
 

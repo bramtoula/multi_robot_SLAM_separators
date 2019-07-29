@@ -11,6 +11,9 @@
     <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
     <arg name="recorded_id" default="0" />
 
+    <arg name="frame_id" default="camera_link"/>
+    <arg name="estimate_stereo_transform_from_tf" default="true" />
+
     <!-- Play the bag within the namespace -->
     <arg name="node_start_delay" default="10.0" />
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
@@ -36,9 +39,9 @@
         <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
 
         <arg name="use_estimates_of_poses" value="false" />
-	<arg name="approx_sync" value="false" />
     </include>
 
+    <arg name="approx_sync" default="false" />
     <arg name="stereo_odom_start_delay" default="10.0" />
     <!-- Stereo Odometry -->
     <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep $(arg stereo_odom_start_delay); $0 $@' " >

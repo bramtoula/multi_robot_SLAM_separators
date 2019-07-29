@@ -16,7 +16,6 @@
 <arg name="rotation_std" default="0.05" />
 
 <arg name="use_estimates_of_poses" default="true" />
-<arg name="approx_sync" default="false" />
 
 <!-- Change the robot id here too! -->
   <group ns="robot_$(arg local_robot_id)">
@@ -26,7 +25,7 @@
     <param name="other_robot_id" type="int" value="$(arg other_robot_id)" />
     <param name="frame_id"      type="string" value="$(arg frame_id)"/>
     <param name="estimate_stereo_transform_from_tf" type="bool" value="$(arg estimate_stereo_transform_from_tf)"/>
-
+    
    <!-- Covariance of separators parameters -->
     <param name="set_fixed_covariance" type="bool" value="$(arg set_fixed_covariance)" />
     <param name="translation_std" type="double" value="$(arg translation_std)" />
