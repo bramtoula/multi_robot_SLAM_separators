@@ -11,6 +11,9 @@
     <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
     <arg name="recorded_id" default="0" />
 
+    <arg name="frame_id" default="camera_link"/>
+    <arg name="estimate_stereo_transform_from_tf" default="true" />
+
     <!-- Play the bag within the namespace -->
     <arg name="node_start_delay" default="10.0" />
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
@@ -26,8 +29,6 @@
     <!-- all vars that included.launch requires must be set -->
         <arg name="other_robot_id" value="$(arg other_robot_id)"/>
         <arg name="local_robot_id" value="$(arg local_robot_id)"/>
-        <arg name="frame_id" value="camera_link"/>
-        <arg name="estimate_stereo_transform_from_tf" value="true" />
 
         <arg name="topic_left_image_rect" value="$(arg topic_left_image_rect)"/>
         <arg name="topic_right_image_rect" value="$(arg topic_right_image_rect)"/>
@@ -36,6 +37,8 @@
         <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
 
         <arg name="use_estimates_of_poses" value="false" />
+        <arg name="frame_id" value="$(arg frame_id)"/>
+        <arg name="estimate_stereo_transform_from_tf" value="$(arg estimate_stereo_transform_from_tf)" />
 	<arg name="approx_sync" value="true" />
     </include>
 
@@ -63,7 +66,6 @@
         <!-- <param name="Reg/Strategy"  type="string" value="0"/>  -->
       <param name="OdomF2M/MaxSize" type="string" value="1000"/> 
       <param name="Vis/MaxFeatures" type="string" value="600"/>
-      <param name="approx_sync" type="bool" value="$(arg approx_sync)"/>
     </node>
 </launch>
 

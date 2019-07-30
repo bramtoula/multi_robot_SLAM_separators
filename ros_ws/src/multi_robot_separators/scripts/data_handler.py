@@ -10,7 +10,7 @@ import numpy as np
 from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from rtabmap_ros.msg import OdomInfo
-import collections
+import sliceable_deque
 
 from scipy.spatial.distance import cdist
 
@@ -37,22 +37,22 @@ def takeClosest(myList, myNumber):
 
 class DataHandler:
     def __init__(self):
-        self.images_l_queue = collections.deque()
-        self.images_r_queue = collections.deque()
-        self.images_rgb_queue = collections.deque()
-        self.geometric_feats = collections.deque()
-        self.images_rgb_kf = collections.deque()
-        self.timestamps_kf = collections.deque()
+        self.images_l_queue = sliceable_deque
+        self.images_r_queue = sliceable_deque
+        self.images_rgb_queue = sliceable_deque
+        self.geometric_feats = sliceable_deque
+        self.images_rgb_kf = sliceable_deque
+        self.timestamps_kf = sliceable_deque
         self.descriptors = []
-        self.separators_found = collections.deque()
-        self.local_kf_already_used = collections.deque()
-        self.other_kf_already_used = collections.deque()
-        self.frames_kept_pairs_ignored = collections.deque()
+        self.separators_found = sliceable_deque
+        self.local_kf_already_used = sliceable_deque
+        self.other_kf_already_used = sliceable_deque
+        self.frames_kept_pairs_ignored = sliceable_deque
         self.nb_kf_skipped = 0
-        self.original_ids_of_kf = collections.deque()
+        self.original_ids_of_kf = sliceable_deque
         self.orig_id_last_img_in_q = 0
         self.nb_kf_odom = 0
-        self.kf_ids_of_frames_kept = collections.deque()
+        self.kf_ids_of_frames_kept = sliceable_deque
 
         tf.reset_default_graph()
         self.image_batch = tf.placeholder(
@@ -164,7 +164,7 @@ class DataHandler:
 
         indexes_smallest_values_all_frames = np.argsort(smallest_values_each_frame)
 
-        matches = collections.deque()
+        matches = sliceable_deque
         for i in range(min(len(indexes_smallest_values_all_frames), constants.MAX_MATCHES)):
             idx_local = indexes_smallest_values_all_frames[i]
             idx_other = indexes_smallest_values_each_frame[indexes_smallest_values_all_frames[i]]
@@ -249,18 +249,18 @@ class DataHandler:
         descriptors_to_comp = np.array(
             find_matches_req.netvlad_descriptors).reshape(-1, constants.NETVLAD_DIMS)
 
-        descriptors_vec = collections.deque()
-        kpts3d_vec = collections.deque()
-        kpts_vec = collections.deque()
+        descriptors_vec = sliceable_deque
+        kpts3d_vec = sliceable_deque
+        kpts_vec = sliceable_deque
 
         # Find closest descriptors
         if (len(descriptors_to_comp) > 0) and (len(self.descriptors) > 0):
             matches = self.find_matches(descriptors_to_comp)
         else:
-            return FindMatchesResponse(collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque())
+            return FindMatchesResponse(sliceable_deque, sliceable_deque, sliceable_deque, sliceable_deque, sliceable_deque, sliceable_deque, sliceable_deque)
 
-        matches_computing_robot_resp = collections.deque()
-        matches_querying_robot_resp = collections.deque()
+        matches_computing_robot_resp = sliceable_deque
+        matches_querying_robot_resp = sliceable_deque
         # Find corresponding visual keypoints and descriptors
         for match in matches:
             resp_feats_and_descs = self.get_geom_features(match[0])
@@ -283,7 +283,7 @@ class DataHandler:
                 print "Service call pose_estimates failed: %s" % e
             
         else:
-            pose_estimates = collections.deque()
+            pose_estimates = sliceable_deque
         return FindMatchesResponse(kf_matched_ids, matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec, pose_estimates)
 
     def found_separators_local(self, kf_ids_from, kf_ids_to, frames_kept_ids_from, frames_kept_ids_to, pose_estimates_from, pose_estimates_to, transform_est_success, separators):
@@ -291,14 +291,14 @@ class DataHandler:
         rospy.loginfo(kf_ids_from)
         rospy.loginfo(kf_ids_to)
 
-        kept_frames_kept_from_id = collections.deque()
-        kept_frames_kept_to_id = collections.deque()
-        kept_kf_from_id = collections.deque()
-        kept_kf_to_id = collections.deque()
-        kept_sep = collections.deque()
-        kept_pose_est_from = collections.deque()
-        kept_pose_est_to = collections.deque()
-        kept_transform_est_success = collections.deque()
+        kept_frames_kept_from_id = sliceable_deque
+        kept_frames_kept_to_id = sliceable_deque
+        kept_kf_from_id = sliceable_deque
+        kept_kf_to_id = sliceable_deque
+        kept_sep = sliceable_deque
+        kept_pose_est_from = sliceable_deque
+        kept_pose_est_to = sliceable_deque
+        kept_transform_est_success = sliceable_deque
         for i in range(len(kf_ids_from)):
             if transform_est_success[i]:
                 kept_kf_from_id.append(kf_ids_from[i])
@@ -325,14 +325,14 @@ class DataHandler:
         rospy.loginfo(receive_separators_req.kf_ids_from)
         rospy.loginfo(receive_separators_req.kf_ids_to)
 
-        kept_frames_kept_from_id = collections.deque()
-        kept_frames_kept_to_id = collections.deque()
-        kept_kf_from_id = collections.deque()
-        kept_kf_to_id = collections.deque()
-        kept_sep = collections.deque()
-        kept_pose_est_from = collections.deque()
-        kept_pose_est_to = collections.deque()
-        kept_transform_est_success = collections.deque()
+        kept_frames_kept_from_id = sliceable_deque
+        kept_frames_kept_to_id = sliceable_deque
+        kept_kf_from_id = sliceable_deque
+        kept_kf_to_id = sliceable_deque
+        kept_sep = sliceable_deque
+        kept_pose_est_from = sliceable_deque
+        kept_pose_est_to = sliceable_deque
+        kept_transform_est_success = sliceable_deque
 
         for i in range(len(receive_separators_req.kf_ids_from)):
             if receive_separators_req.transform_est_success[i]:
