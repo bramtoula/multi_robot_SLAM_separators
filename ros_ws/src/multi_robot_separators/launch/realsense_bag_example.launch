@@ -39,7 +39,6 @@
         <arg name="use_estimates_of_poses" value="false" />
         <arg name="frame_id" value="$(arg frame_id)"/>
         <arg name="estimate_stereo_transform_from_tf" value="$(arg estimate_stereo_transform_from_tf)" />
-	<arg name="approx_sync" value="true" />
     </include>
 
     <arg name="stereo_odom_start_delay" default="10.0" />
