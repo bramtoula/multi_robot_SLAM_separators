@@ -16,6 +16,7 @@
 <arg name="rotation_std" default="0.05" />
 
 <arg name="use_estimates_of_poses" default="true" />
+<arg name="approx_sync" default="false" />
 
 <!-- Change the robot id here too! -->
   <group ns="robot_$(arg local_robot_id)">
@@ -25,7 +26,7 @@
     <param name="other_robot_id" type="int" value="$(arg other_robot_id)" />
     <param name="frame_id"      type="string" value="$(arg frame_id)"/>
     <param name="estimate_stereo_transform_from_tf" type="bool" value="$(arg estimate_stereo_transform_from_tf)"/>
-    
+
    <!-- Covariance of separators parameters -->
     <param name="set_fixed_covariance" type="bool" value="$(arg set_fixed_covariance)" />
     <param name="translation_std" type="double" value="$(arg translation_std)" />
@@ -46,6 +47,35 @@
     <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators" output="screen"/>
     <!-- <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/> -->
     <node pkg="multi_robot_separators" type="communication" name="communication" output="screen"/>
+
+
+    <arg name="stereo_odom_start_delay" default="10.0" />
+    <!-- Stereo Odometry -->
+    <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep $(arg stereo_odom_start_delay); $0 $@' " >
+      <param name="frame_id"      type="string" value="$(arg frame_id)"/>
+      <param name="estimate_stereo_transform_from_tf" type="bool" value="$(arg estimate_stereo_transform_from_tf)"/>
+      <param name="Odom/Strategy"      type="string" value="0"/> <!--  0=Frame-to-Map, 1=Frame=to=Frame-->
+        <!-- <param name="Odom/ImageBufferSize"  type="string" value="0"/>  -->
+        <!-- <param name="Vis/EstimationType" type="string" value="1"/> 0=3D->3D 1=3D->2D (PnP) -->
+        <!-- <param name="Vis/PnPFlags"       type="string" value="0"/> -->
+        <!-- <param name="Vis/PnPReprojError"     type="string" value="1"/> -->
+        <!-- <param name="Vis/CorFlowWinSize"     type="string" value="15"/> -->
+      <param name="Vis/CorType"     type="string" value="1"/>
+        <!-- <param name="GFTT/MinDistance"   type="string" value="10"/> -->
+        <!-- <param name="GFTT/QualityLevel"  type="string" value="0.002"/>  -->
+        <!-- <param name="Icp/CorrespondenceRatio"  type="string" value="0.1"/>  -->
+        <!-- <param name="Icp/Iterations"  type="string" value="10"/>  -->
+        <!-- <param name="Icp/MaxCorrespondenceDistance"  type="string" value="0.3"/>  -->
+        <!-- <param name="Icp/PointToPlane"  type="string" value="true"/>  -->
+        <!-- <param name="Icp/MaxTranslation"  type="string" value="0"/>  -->
+        <!-- <param name="Icp/VoxelSize"  type="string" value="0"/>  -->
+        <!-- <param name="Icp/Epsilon"  type="string" value="0.01"/>  -->
+        <!-- <param name="Reg/Strategy"  type="string" value="0"/>  -->
+      <param name="OdomF2M/MaxSize" type="string" value="1000"/> 
+      <param name="Vis/MaxFeatures" type="string" value="600"/>
+      <param name="approx_sync" type="bool" value="$(arg approx_sync)"/>
+    </node>
+
 
   </group>
 </launch>
