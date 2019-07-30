@@ -85,6 +85,8 @@ class DataHandler:
             for id in self.original_ids_of_kf:
                 file.write("%i\n" % id)
         self.sess.close()
+        rospy.loginfo('Close TF session') 
+        
 
     def save_image_l(self, image_l):
         try:
