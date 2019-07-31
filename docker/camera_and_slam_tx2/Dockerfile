@@ -1,4 +1,4 @@
-FROM ros:melodic-perception
+FROM realsense-tx2
 
 WORKDIR /root/
 

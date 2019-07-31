@@ -16,6 +16,7 @@
 <arg name="rotation_std" default="0.05" />
 
 <arg name="use_estimates_of_poses" default="true" />
+<arg name="approx_sync" default="false" />
 
 <!-- Change the robot id here too! -->
   <group ns="robot_$(arg local_robot_id)">
@@ -53,7 +54,7 @@
     <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep $(arg stereo_odom_start_delay); $0 $@' " >
       <param name="frame_id"      type="string" value="$(arg frame_id)"/>
       <param name="estimate_stereo_transform_from_tf" type="bool" value="$(arg estimate_stereo_transform_from_tf)"/>
-      <param name="Odom/Strategy"      type="string" value="1"/> <!--  0=Frame-to-Map, 1=Frame=to=Frame-->
+      <param name="Odom/Strategy"      type="string" value="0"/> <!--  0=Frame-to-Map, 1=Frame=to=Frame-->
         <!-- <param name="Odom/ImageBufferSize"  type="string" value="0"/>  -->
         <!-- <param name="Vis/EstimationType" type="string" value="1"/> 0=3D->3D 1=3D->2D (PnP) -->
         <!-- <param name="Vis/PnPFlags"       type="string" value="0"/> -->
@@ -72,6 +73,7 @@
         <!-- <param name="Reg/Strategy"  type="string" value="0"/>  -->
       <param name="OdomF2M/MaxSize" type="string" value="1000"/> 
       <param name="Vis/MaxFeatures" type="string" value="600"/>
+      <param name="approx_sync" type="bool" value="$(arg approx_sync)"/>
     </node>
 
 
