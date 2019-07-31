@@ -1,4 +1,4 @@
-BATCH_SIZE = 5 # Must be adapted to speed to run netvlad
+BATCH_SIZE = 3 # Must be adapted to speed to run netvlad
 MAX_MATCHES = 20
 MATCH_DISTANCE = 0.13
 NETVLAD_DIMS = 128
