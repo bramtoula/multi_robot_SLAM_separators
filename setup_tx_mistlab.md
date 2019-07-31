@@ -163,7 +163,7 @@ First, make sure ra0 is visible when you run `iwconfig`.
 Then run the following commands to join (or create if you are the first to join) a mesh network:
 ```
 sudo iw dev ra0 set type ibss
-sudo iw dev ra0 ibss join NVIDIA 5220 (BSSID)
+sudo iw dev ra0 ibss join NVIDIA 5220 
 ```
 
 To check whether it has been set correctly, you can run
