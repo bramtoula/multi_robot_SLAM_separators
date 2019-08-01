@@ -1,4 +1,4 @@
-FROM realsense-tx2
+FROM lajoiepy/realsense-tx2
 
 WORKDIR /root/
 
@@ -57,7 +57,6 @@ RUN git clone https://github.com/introlab/rtabmap.git && \
 RUN source /ros_entrypoint.sh && \
     mkdir -p catkin_ws/src && \
     cd catkin_ws/src && \
-    catkin_init_workspace && \
     git clone https://github.com/bramtoula/rtabmap_ros.git && \
     cd .. && \
     catkin_make -j2 -DCMAKE_INSTALL_PREFIX=/opt/ros/melodic install && \
