@@ -191,7 +191,7 @@ sudo /etc/init.d/networking restart
 
 To check whether it has been set correctly, you can run
 ```
-sudo iw dev wlan0 info
+sudo iw dev rlan0 info
 ```
 
 
