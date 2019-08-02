@@ -180,7 +180,7 @@ class DataHandler:
                 matches.append((idx_local, idx_other))
             else:
                 break
-
+        rospy.logwarn(distances)
         rospy.loginfo("Matches found:")
         rospy.loginfo(matches)
         return matches
