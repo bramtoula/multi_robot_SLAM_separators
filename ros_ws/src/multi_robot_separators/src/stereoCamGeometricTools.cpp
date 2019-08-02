@@ -76,21 +76,23 @@ StereoCamGeometricTools::StereoCamGeometricTools(const sensor_msgs::CameraInfo &
     cam_ = stereoCameraModelFromROS(camera_info_l, camera_info_r, local_transform, stereo_transform);
 
     ParametersMap params;
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpCorrespondenceRatio(), "0.1"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpIterations(), "10"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxCorrespondenceDistance(), "0.3"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxTranslation(), "0"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpPointToPlane(), "true"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpVoxelSize(), "0"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpEpsilon(), "0.01"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpCorrespondenceRatio(), "0.1"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpIterations(), "10"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxCorrespondenceDistance(), "0.3"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpMaxTranslation(), "0"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpPointToPlane(), "true"));
+   // params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpVoxelSize(), "0"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kIcpEpsilon(), "0.01"));
+    
+    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisMinInliers(), "5"));
 
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisEstimationType(), "1"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPFlags(), "0"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPReprojError(), "2"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorFlowWinSize(), "16"));
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorType(), "0"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisEstimationType(), "1"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPFlags(), "0"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisPnPReprojError(), "2"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorFlowWinSize(), "16"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kVisCorType(), "0"));
 
-    params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kRegStrategy(), "0"));
+    //params.insert(rtabmap::ParametersPair(rtabmap::Parameters::kRegStrategy(), "0"));
 
     registrationPipeline_ = Registration::create(params);
 }
