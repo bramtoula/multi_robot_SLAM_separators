@@ -147,6 +147,14 @@ RUN cd ~/rdpgo_ws/src/robust_distributed_slam_module/scripts &&\
 RUN apt-get update && apt-get install -y --no-install-recommends vim htop net-tools gedit nano wget strace valgrind && \
     rm -rf /var/lib/apt/lists/* 
 
+#####################################################   Blabbermouth  #####################################################
+RUN git clone https://github.com/lajoiepy/blabbermouth.git &&\
+    cd blabbermouth &&\
+    mkdir build &&\
+    cd build &&\
+    cmake ../src &&\
+    make
+
 ##################################################### Repull and build #####################################################
 # --------------------------------------------------- Reset argument ------------------------------------------#
 ARG repull_and_build=0

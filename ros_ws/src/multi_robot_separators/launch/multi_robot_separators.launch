@@ -45,7 +45,7 @@
     <!-- Nodes to run -->
     <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools" output="screen" />
     <node pkg="multi_robot_separators" type="find_separators.py" name="find_separators" output="screen"/>
-    <node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/>
+    <!--node pkg="multi_robot_separators" type="factor_graph" name="factor_graph"/-->
     <node pkg="multi_robot_separators" type="communication" name="communication" output="screen"/>
 
 
