@@ -18,6 +18,17 @@
 <arg name="use_estimates_of_poses" default="true" />
 <arg name="approx_sync" default="false" />
 
+<arg name="log_pos_from_px4" default="false" />
+<arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
+
+<!-- mavros params -->
+<arg name="fcu_url" default="/dev/ttyTHS2:57600" />
+<arg name="gcs_url" default="" />
+<arg name="tgt_system" default="1" />
+<arg name="tgt_component" default="1" />
+<arg name="log_output" default="screen" />
+<arg name="fcu_protocol" default="v2.0" />
+<arg name="respawn_mavros" default="false" />
 <!-- Change the robot id here too! -->
   <group ns="robot_$(arg local_robot_id)">
 
@@ -75,6 +86,24 @@
       <!--param name="Vis/MaxFeatures" type="string" value="600"/-->
       <param name="approx_sync" type="bool" value="$(arg approx_sync)"/>
     </node>
+
+  <group if="$(arg log_pos_from_px4)">
+    <include file="$(find mavros)/launch/node.launch">
+      <arg name="pluginlists_yaml" value="$(find mavros)/launch/px4_pluginlists.yaml" />
+      <arg name="config_yaml" value="$(find mavros)/launch/px4_config.yaml" />
+
+      <arg name="fcu_url" value="$(arg fcu_url)" />
+      <arg name="gcs_url" value="$(arg gcs_url)" />
+      <arg name="tgt_system" value="$(arg tgt_system)" />
+      <arg name="tgt_component" value="$(arg tgt_component)" />
+      <arg name="log_output" value="$(arg log_output)" />
+      <arg name="fcu_protocol" value="$(arg fcu_protocol)" />
+      <arg name="respawn_mavros" default="$(arg respawn_mavros)" />
+    </include>
+
+    <node pkg="rosbag" type="record" name="rosbag_record_log_pos"
+       args="record -o $(arg logs_location) mavros/global_position/global mavros/global_position/local mavros/global_position/raw/fix mavros/local_position/pose tf tf_static odom_info"/>
+  </group>
 
 
   </group>
