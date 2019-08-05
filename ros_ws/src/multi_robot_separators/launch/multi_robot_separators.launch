@@ -102,7 +102,7 @@
     </include>
 
     <node pkg="rosbag" type="record" name="rosbag_record_log_pos"
-       args="record -o $(arg logs_location) mavros/global_position/global mavros/global_position/local mavros/global_position/raw/fix mavros/local_position/pose tf tf_static odom_info"/>
+       args="record -o $(arg logs_location)pos_logs -e /robot_$(arg local_robot_id)/mavros/(.*) /robot_$(arg local_robot_id)/odom_info /tf /tf_static"/>
   </group>
 
 
