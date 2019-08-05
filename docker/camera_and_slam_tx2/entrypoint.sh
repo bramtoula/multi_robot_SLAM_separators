@@ -34,7 +34,7 @@ case "$1" in
             	rosbag record -o /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/ /robot_$5/camera/color/camera_info /robot_$5/camera/color/image_raw \
                           /robot_$5/camera/infra1/camera_info /robot_$5/camera/infra1/image_rect_raw \
                           /robot_$5/camera/infra2/camera_info /robot_$5/camera/infra2/image_rect_raw \
-                          /tf /tf_static &
+                          /tf /tf_static 
             ;;
 
         separators)
