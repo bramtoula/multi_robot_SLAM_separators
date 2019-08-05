@@ -8,7 +8,7 @@
     <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/camera/infra2/camera_info"/>
     <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/camera/color/image_raw" />
 
-    <arg name="log_pos_from_px4" default="false" />
+    <arg name="log_pos_from_px4" default="true" />
     <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
 
     <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">

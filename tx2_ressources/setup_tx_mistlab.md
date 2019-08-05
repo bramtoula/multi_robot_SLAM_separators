@@ -156,9 +156,10 @@ Now you'll be able to run the following command on your computer to access the d
 
 It is important that this works before going forward since it will be our only way to access the TX once it is inserted in the drone.
 
-### ra0 in a mesh network for B.A.T.M.A.N.
+### Setting ra0 and bat0 interfaces manually (better for debugging)
 
-#### Manually.
+#### ra0 in a mesh network for B.A.T.M.A.N
+
 First, make sure ra0 is visible when you run `iwconfig`.
 Then run the following commands to join (or create if you are the first to join) a mesh network:
 ```
@@ -171,31 +172,8 @@ To check whether it has been set correctly, you can run
 sudo iw dev ra0 info
 ```
 
-#### On boot, doesn't seem to work well with ra0.
-These steps could be replaced by adding the following to your `/etc/network/interface` file, but it doesn't seem to work well with the dongle:
-```
- #Ad-hoc interface
-auto ra0
-iface ra0 inet static
-        address <An IP address you choose>
-        netmask 255.255.255.0
-        wireless-channel 44
-        wireless-essid NVIDIA
-        wireless-mode ad-hoc
-```
 
-Then, reload the interfaces file:
-```
-sudo /etc/init.d/networking restart
-```
-
-To check whether it has been set correctly, you can run
-```
-sudo iw dev ra0 info
-```
-
-
-### Batman
+#### Batman
 
 Now to use batman:
 ```
@@ -210,15 +188,34 @@ sudo avahi-autoipd bat0 &
 
 You can now check if you see other devices using batman either by using ping with their bat0 IPv4 addresses, or checking the neighbors:
 ```
-sudo batctl o
+sudo batctl n
 ```
 
 
+### Setting ra0 and bat0 interfaces automatically on boot, with a static IP.
+We have a script ready which can run on boot and sets up the interface with a static and manually set IP.
+You can find the script here: [run_batman.sh](run_batman.sh).
+
+You should copy this script in `/etc/init.d/`, and modify the `192.168.10.150` by the static IP address you want on the bat0 interface.
+
+Then run the following commands for the script to run on boot:
+```
+cd /etc/init.d
+sudo chmod +x run_batman.sh
+sudo update-rc.d run_batman.sh defaults
+```
+
+Once you'll reboot you should be able to check that the ra0 interface is of type IBSS connected to the NVIDIA SSID with:
+```
+sudo iw dev ra0 info
+```
+
+You should see the bat0 interface when running `ifconfig`, with the static IP you chose.
 
 ## Install libraries needed for our code
 On the TX2 itself, we need libraries used in our Docker containers.
 ```
-sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfreenect-dev libdc1394-22-dev libglvnd-dev libopencv-contrib3.2 libmetis-dev libboost-all-dev libpcl-dev liblz4-dev libogre-1.9-dev liburdfdom-dev liblog4cxx-dev libtinyxml2-dev libassimp4 libyaml-cpp0.5v5
+sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfreenect-dev libdc1394-22-dev libglvnd-dev libopencv-contrib3.2 libmetis-dev libboost-all-dev libpcl-dev liblz4-dev libogre-1.9-dev liburdfdom-dev liblog4cxx-dev libtinyxml2-dev libassimp4 libyaml-cpp0.5v5 geographiclib-tools
 ```
 
 

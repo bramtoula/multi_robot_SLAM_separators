@@ -43,7 +43,9 @@ class DataHandler:
         self.geometric_feats = collections.deque()
         self.images_rgb_kf = collections.deque()
         self.timestamps_kf = collections.deque()
-        self.descriptors = []
+        self.local_descriptors = []
+        self.nb_descriptors_already_sent = 0
+        self.received_descriptors = []
         self.separators_found = collections.deque()
         self.local_kf_already_used = collections.deque()
         self.other_kf_already_used = collections.deque()
@@ -121,7 +123,7 @@ class DataHandler:
         # Check if enough data to fill a batch
         # if len(self.images_l_kf) - len(self.descriptors) >= constants.BATCH_SIZE:
         rospy.loginfo("Computing descriptors. Currently already computed " +
-                      str(len(self.descriptors))+" netvlad descriptors. Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
+                      str(len(self.local_descriptors))+" netvlad descriptors. Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
         # If so, compute and store descriptors (as much as we can up to the batch size)
         nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
         batch = collections.deque(self.images_rgb_kf[i] for i in range(0, nb_images_batch)) # self.images_rgb_kf[:nb_images_batch]
@@ -131,7 +133,7 @@ class DataHandler:
                                         self.image_batch: batch})
 
             rospy.loginfo("Saving descriptors")
-            self.descriptors.extend(
+            self.local_descriptors.extend(
                 descriptors[:, :constants.NETVLAD_DIMS].tolist())
 
             # Remove rgb images from memory
@@ -140,11 +142,11 @@ class DataHandler:
         else:
             rospy.loginfo("Empty batch, no images to compute descriptors for")
 
-    def find_matches(self, descriptors_to_comp):
-        # find closest matches between self.descriptors and descriptors_to_comp, use scipy.spatial.distance.cdist
-        local_descs = np.array(self.descriptors)
-
-        distances = cdist(local_descs, descriptors_to_comp)
+    def find_matches(self):
+        # find closest matches between self.descriptors and self.received_descriptors, use scipy.spatial.distance.cdist
+        local_descs = np.array(self.local_descriptors)
+        received_descs = np.array(self.received_descriptors)
+        distances = cdist(local_descs, received_descs)
 
         # TODO Maybe don't ignore every possible matches for a frame (full line to inf), but only specific matches
         # Increase distances for local frames which were already matched so we can discover new frames
@@ -253,18 +255,17 @@ class DataHandler:
                     self.orig_id_last_img_in_q - len(self.images_l_queue))
 
     def find_matches_service(self, find_matches_req):
-
         rospy.loginfo("Reached service")
-        descriptors_to_comp = np.array(
-            find_matches_req.netvlad_descriptors).reshape(-1, constants.NETVLAD_DIMS)
+
+        self.received_descriptors.extend(np.array(find_matches_req.new_netvlad_descriptors).reshape(-1, constants.NETVLAD_DIMS).tolist())
 
         descriptors_vec = collections.deque()
         kpts3d_vec = collections.deque()
         kpts_vec = collections.deque()
 
         # Find closest descriptors
-        if (len(descriptors_to_comp) > 0) and (len(self.descriptors) > 0):
-            matches = self.find_matches(descriptors_to_comp)
+        if (len(self.received_descriptors) > 0) and (len(self.local_descriptors) > 0):
+            matches = self.find_matches()
         else:
             return FindMatchesResponse(collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque(), collections.deque())
 

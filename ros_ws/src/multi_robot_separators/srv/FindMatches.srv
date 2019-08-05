@@ -1,4 +1,4 @@
-float64[] netvlad_descriptors
+float64[] new_netvlad_descriptors
 ---
 int16[] kf_ids_computing_robot
 int16[] frames_kept_ids_computing_robot
