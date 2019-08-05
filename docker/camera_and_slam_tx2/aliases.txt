@@ -3,7 +3,7 @@ export MASTER=151
 export LOCAL_ROBOT_ID=0
 export OTHER_ROBOT_ID=1
 
-alias camera='tx2-docker run --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2 camera $MASK $MASTER $LOCAL_ROBOT_ID camera'
+alias camera='tx2-docker run --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 camera $MASK $MASTER $LOCAL_ROBOT_ID camera'
 alias docker_bash='docker exec -it $(docker container ls -q) ./entrypoint.sh bash $MASK $MASTER'
 alias optimization='docker exec -it $(docker container ls -q) ./entrypoint.sh optimization $MASK $MASTER $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
 alias blabbermouth='docker exec -it $(docker container ls -q) ./entrypoint.sh blabbermouth3 $MASK $MASTER 10000 150 151 152'

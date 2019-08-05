@@ -12,7 +12,7 @@
     <arg name="recorded_id" default="0" />
 
     <!-- Play the bag within the namespace -->
-    <arg name="node_start_delay" default="10.0" />
+    <arg name="node_start_delay" default="30.0" />
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
         <remap from="/robot_$(arg recorded_id)/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
         <remap from="/robot_$(arg recorded_id)/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
