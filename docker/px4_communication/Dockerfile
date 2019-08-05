@@ -1,4 +1,4 @@
-FROM lajoiepy/realsense-distributed-slam-tx2
+FROM lajoiepy/realsense-tx2
 
 RUN apt-get update && \
     apt-get -y install screen python-wxgtk3.0 python-matplotlib python-opencv python-pip python-numpy python-dev libxml2-dev libxslt1-dev ros-melodic-mavros* ros-melodic-mavlink && \
@@ -12,4 +12,3 @@ RUN apt-get update && \
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
-CMD ["100", "0", "1", "bash"]

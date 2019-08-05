@@ -1,4 +1,5 @@
-FROM lajoiepy/realsense-tx2
+FROM lajoiepy/realsense-tx2-px4
+
 
 WORKDIR /root/
 
@@ -181,4 +182,3 @@ RUN cd multi_robot_SLAM_separators/ros_ws/ && \
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 ENTRYPOINT ["/root/entrypoint.sh"]
-CMD ["100", "0", "1", "bash"]
