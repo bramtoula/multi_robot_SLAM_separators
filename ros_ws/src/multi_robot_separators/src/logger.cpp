@@ -8,7 +8,7 @@ void log_find_matches_query(multi_robot_separators::FindMatches::Request &req)
     fprintf(pFile, "%u.%u\n", t.sec, t.nsec);
 
     fprintf(pFile, "number_of_values_in_descriptors ");
-    fprintf(pFile, "%lu ", boost::size(req.netvlad_descriptors));
+    fprintf(pFile, "%lu ", boost::size(req.new_netvlad_descriptors));
     fprintf(pFile, "\n");
     fprintf(pFile, "\n");
     fclose(pFile);

@@ -52,7 +52,7 @@ def find_separators():
         
         # Check if other robot is visible
         if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
-            if i % 20 and (len(dataHandler.descriptors) > 0):
+            if i % 20 and (len(dataHandler.local_descriptors) > 0):
                 # resp_matches = dataHandler.call_find_matches_serv()
                 frames_kept_ids_from_kept = collections.deque()
                 frames_kept_ids_to_kept = collections.deque()
@@ -63,12 +63,17 @@ def find_separators():
                 
                 # Call service to find matches and corresponding keypoints and geometric descriptors
                 try:
+                    # Only send descriptors which havent been sent yet
+                    descriptors_to_send = dataHandler.local_descriptors[dataHandler.nb_descriptors_already_sent:]
                     flatten_desc = [
-                        item for sublist in list(dataHandler.descriptors) for item in sublist]
+                        item for sublist in list(descriptors_to_send) for item in sublist]
                     res_matches = s_find_matches_query(flatten_desc)
                 except rospy.ServiceException, e:
                     print "Service call to find matches query failed: %s" % e
                     break
+
+                dataHandler.nb_descriptors_already_sent += len(descriptors_to_send)
+
                 
                 # If matches are found, compute the separators, send them back, and add them to the pose graph
                 for i in range(len(res_matches.kf_ids_computing_robot)):
