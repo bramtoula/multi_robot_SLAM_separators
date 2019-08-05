@@ -12,17 +12,17 @@ Communicater::Communicater()
     }
 }
 
-bool Communicater::found_separators_send(multi_robot_separators::ReceiveSeparators::Request &req,
+bool Communicater::found_separators_query(multi_robot_separators::ReceiveSeparators::Request &req,
                                          multi_robot_separators::ReceiveSeparators::Response &res)
 {
-    
     std::string service_name = "/robot_"+std::to_string(other_robot_id_)+"/found_separators_receive";
     ros::ServiceClient client = n_.serviceClient<multi_robot_separators::ReceiveSeparators>(service_name);
     multi_robot_separators::ReceiveSeparators srv;
     srv.request = req;
+    log_receive_separators_query(req);
     if (client.call(srv))
     {
-
+        log_receive_separators_answer(res);
         res = srv.response;
     }
     else
@@ -58,10 +58,13 @@ bool Communicater::find_matches_query(multi_robot_separators::FindMatches::Reque
     ros::ServiceClient client = n_.serviceClient<multi_robot_separators::FindMatches>(service_name);
     multi_robot_separators::FindMatches srv;
     srv.request = req;
+    log_find_matches_query(req);
+
     if (client.call(srv))
     {
 
         res = srv.response;
+        log_find_matches_answer(res);
     }
     else
     {
@@ -96,7 +99,7 @@ int main(int argc, char **argv)
 
     ros::ServiceServer service_matches_query = communicater.n_.advertiseService("find_matches_query", &Communicater::find_matches_query, &communicater);
     ros::ServiceServer service_matches_answer = communicater.n_.advertiseService("find_matches_answer", &Communicater::find_matches_answer, &communicater);
-    ros::ServiceServer service_sep_send = communicater.n_.advertiseService("found_separators_send", &Communicater::found_separators_send, &communicater);
+    ros::ServiceServer service_sep_query = communicater.n_.advertiseService("found_separators_query", &Communicater::found_separators_query, &communicater);
     ros::ServiceServer service_sep_rec = communicater.n_.advertiseService("found_separators_receive", &Communicater::found_separators_receive, &communicater);
 
     ros::AsyncSpinner spinner(2); // Use 4 threads

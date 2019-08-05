@@ -39,7 +39,7 @@ def find_separators():
     s_find_matches_query = rospy.ServiceProxy(
         'find_matches_query', FindMatches)
     s_ans_rec_sep = rospy.ServiceProxy(
-        'found_separators_send', ReceiveSeparators)
+        'found_separators_query', ReceiveSeparators)
 
     i = 0
     while not rospy.is_shutdown():
@@ -124,7 +124,7 @@ def find_separators():
                     s_ans_rec_sep(dataHandler.local_robot_id, dataHandler.other_robot_id,kf_ids_from_kept,
                                   kf_ids_to_kept, frames_kept_ids_from_kept, frames_kept_ids_to_kept, pose_estimates_from_kept, pose_estimates_to_kept, transform_est_success, separators_found)
                 except rospy.ServiceException, e:
-                    print "Service call found_separators_send failed: %s" % e
+                    print "Service call found_separators_query failed: %s" % e
                 rospy.logwarn("find : check 15")
         rate.sleep()
 
