@@ -7,7 +7,6 @@ RUN apt-get update && \
     chmod +x install_geographiclib_datasets.sh && \
     ./install_geographiclib_datasets.sh && \
     rm install_geographiclib_datasets.sh && \
-    apt-get -y --purge autoremove python-pip && \
     rm -rf /var/lib/apt/lists/*
 
 COPY entrypoint.sh entrypoint.sh
