@@ -75,7 +75,6 @@ RUN git clone https://github.com/MISTLab/Buzz.git /home/docker/buzz && \
     ldconfig && \
     rm -r /home/docker/buzz
 
-
 ##################################################### Netvlad stuff  #####################################################
 # RUN apt-get update && \
 #     apt-get install -y --no-install-recommends unzip wget && \
@@ -141,8 +140,6 @@ RUN cd ~/rdpgo_ws/ &&\
 RUN cd ~/rdpgo_ws/src/robust_distributed_slam_module/scripts &&\
     bzzc ros_slam.bzz
 
-
-
 ##################################################### Debugging tools #####################################################
 # Install and setup some editing and debugging tools
 RUN apt-get update && apt-get install -y --no-install-recommends vim htop net-tools gedit nano wget strace valgrind && \
@@ -155,6 +152,11 @@ RUN git clone https://github.com/lajoiepy/blabbermouth.git &&\
     cd build &&\
     cmake ../src &&\
     make
+
+##################################################### Mavros #############################################################
+# Install Mavros
+RUN apt-get update && apt-get install -y ros-melodic-mavros && \
+    rm -rf /var/lib/apt/lists/* 
 
 ##################################################### Repull and build #####################################################
 # --------------------------------------------------- Reset argument ------------------------------------------#
@@ -178,6 +180,7 @@ RUN cd multi_robot_SLAM_separators/ros_ws/ && \
     bzzc ros_slam.bzz
 
 ##################################################### Setup Entrypoint ##################################################### 
+ENV TZ=America/New_York
 
 COPY entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
