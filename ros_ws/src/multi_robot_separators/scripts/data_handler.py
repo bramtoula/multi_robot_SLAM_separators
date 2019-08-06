@@ -286,14 +286,13 @@ class DataHandler:
         kf_matched_ids = self.get_kf_ids_from_frames_kept_ids(
             matches_computing_robot_resp)
 
+        pose_estimates = collections.deque()
         if self.send_estimates_of_poses:
             try:
                 pose_estimates = self.s_get_pose_estimates(kf_matched_ids).pose_estimates
             except rospy.ServiceException, e:
                 print "Service call pose_estimates failed: %s" % e
             
-        else:
-            pose_estimates = collections.deque()
         return FindMatchesResponse(kf_matched_ids, matches_computing_robot_resp, matches_querying_robot_resp, descriptors_vec, kpts3d_vec, kpts_vec, pose_estimates)
 
     def found_separators_local(self, kf_ids_from, kf_ids_to, frames_kept_ids_from, frames_kept_ids_to, pose_estimates_from, pose_estimates_to, transform_est_success, separators):
