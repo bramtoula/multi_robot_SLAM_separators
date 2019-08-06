@@ -1,16 +1,19 @@
 export MASK=12
 export MASTER=151
-export LOCAL_ROBOT_ID=0
-export OTHER_ROBOT_ID=1
+export OWN_IP=151
+export LOCAL_ROBOT_ID=1
+export OTHER_ROBOT_ID=2
 
-alias camera='tx2-docker run --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 camera $MASK $MASTER $LOCAL_ROBOT_ID camera'
-alias docker_bash='docker exec -it $(docker container ls -q) ./entrypoint.sh bash $MASK $MASTER'
-alias optimization='docker exec -it $(docker container ls -q) ./entrypoint.sh optimization $MASK $MASTER $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
-alias blabbermouth='docker exec -it $(docker container ls -q) ./entrypoint.sh blabbermouth3 $MASK $MASTER 10000 150 151 152'
-alias blabbermouth2='docker exec -it $(docker container ls -q) ./entrypoint.sh blabbermouth2 $MASK $MASTER 10000 151 152'
-alias trigger='docker exec -it $(docker container ls -q) ./entrypoint.sh trigger $MASK $MASTER'
-alias separators='docker exec -it $(docker container ls -q) ./entrypoint.sh separators $MASK $MASTER $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
-alias bag_sep='docker exec -it $(docker container ls -q) ./entrypoint.sh bag $MASK $MASTER $LOCAL_ROBOT_ID $OTHER_ROBOT_ID /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/bag-$LOCAL_ROBOT_ID.bag 0'
+alias camera='dir_name="$(date +%Y-%m-%d_%H-%M-%S)" && \mkdir -p /home/nvidia/Desktop/$dir_name/datasets && \tx2-docker run -e TZ=America/New_York --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop/$dir_name:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 camera $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID camera'
+alias docker_bash='docker exec -it $(docker container ls -q) ./entrypoint.sh bash $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
+alias optimization='docker exec -it $(docker container ls -q) ./entrypoint.sh optimization $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
+alias blabbermouth='docker exec -it $(docker container ls -q) ./entrypoint.sh blabbermouth3 $MASK $MASTER $OWN_IP 10000 150 151 152'
+alias blabbermouth2='docker exec -it $(docker container ls -q) ./entrypoint.sh blabbermouth2 $MASK $MASTER $OWN_IP 10000 151 152'
+alias trigger='docker exec -it $(docker container ls -q) ./entrypoint.sh trigger $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
+alias separators='docker exec -it $(docker container ls -q) ./entrypoint.sh separators $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
+alias bag_sep='docker exec -it $(docker container ls -q) ./entrypoint.sh bag $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/bag-$LOCAL_ROBOT_ID.bag 0'
 alias baginfo='docker exec -it $(docker container ls -q) $(echo "for file in /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/*.bag; do echo \"$file\" && rosbag info \"$file\" -y; done")'
-alias record='tx2-docker run --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/bags:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 record $MASK $MASTER $LOCAL_ROBOT_ID'
+alias record='tx2-docker run --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/bags:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 record $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
+alias px4_bash='tx2-docker run --net host --privileged -v /dev/:/dev/ -v /home/nvidia/bags:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 bash $MASTER $MASK $OWN_IP $LOCAL_ROBOT_ID'
+alias px4_record='tx2-docker run --net host --privileged -v /dev/:/dev/ -v /home/nvidia/bags:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log --entrypoint "source /opt/melodic/setup.bash && roslaunch mavros px4.launch && ./entrypoint.sh record $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID" -it lajoiepy/realsense-distributed-slam-tx2-px4'
 
