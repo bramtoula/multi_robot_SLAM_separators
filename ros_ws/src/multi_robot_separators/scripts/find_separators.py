@@ -53,18 +53,14 @@ def find_separators():
         # Check if other robot is visible
         if '/robot_'+str(dataHandler.other_robot_id)+'/find_matches_query' in service_list:
             if i % 20 and (len(dataHandler.local_descriptors) > 0):
-                # resp_matches = dataHandler.call_find_matches_serv()
-                frames_kept_ids_from_kept = collections.deque()
-                frames_kept_ids_to_kept = collections.deque()
-                kf_ids_to_kept = collections.deque()
-                transform_est_success = collections.deque()
-                separators_found = collections.deque()
-                pose_estimates_to_kept = collections.deque()
-                
                 # Call service to find matches and corresponding keypoints and geometric descriptors
                 try:
                     # Only send descriptors which havent been sent yet
                     descriptors_to_send = dataHandler.local_descriptors[dataHandler.nb_descriptors_already_sent:]
+
+                    # If no new descriptors, do nothing
+                    if not descriptors_to_send:
+                        continue
                     flatten_desc = [
                         item for sublist in list(descriptors_to_send) for item in sublist]
                     res_matches = s_find_matches_query(flatten_desc)
@@ -74,8 +70,19 @@ def find_separators():
 
                 dataHandler.nb_descriptors_already_sent += len(descriptors_to_send)
 
+                # If no matches are found, do nothing
+                if not res_matches.kf_ids_computing_robot:
+                    continue
                 
                 # If matches are found, compute the separators, send them back, and add them to the pose graph
+
+                frames_kept_ids_from_kept = collections.deque()
+                frames_kept_ids_to_kept = collections.deque()
+                kf_ids_to_kept = collections.deque()
+                transform_est_success = collections.deque()
+                separators_found = collections.deque()
+                pose_estimates_to_kept = collections.deque()
+
                 for i in range(len(res_matches.kf_ids_computing_robot)):
                     # Compute geometric features of the local frames that were matched. Use matched_ids_other since it is from the point of view of the other robot.
                     local_features_and_desc = dataHandler.get_geom_features(
