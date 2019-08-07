@@ -75,15 +75,19 @@ RUN git clone https://github.com/MISTLab/Buzz.git /home/docker/buzz && \
     ldconfig && \
     rm -r /home/docker/buzz
 
-##################################################### Netvlad stuff  #####################################################
-# RUN apt-get update && \
-#     apt-get install -y --no-install-recommends unzip wget && \
-#     git clone https://github.com/uzh-rpg/netvlad_tf_open.git && \
-#     wget http://rpg.ifi.uzh.ch/datasets/netvlad/vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-#     unzip vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \ 
-#     rm vd16_pitts30k_conv5_3_vlad_preL2_intra_white.zip && \
-#     apt-get remove -y unzip wget && \
-#     rm -rf /var/lib/apt/lists/*
+##################################################### DJI SDK #############################################################
+# Install DJI_SDK
+RUN apt-get update && apt-get install -y ros-melodic-nmea-msgs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir ~/dji_ws && mkdir ~/dji_ws/src && cd ~/dji_ws/src &&\
+    git clone https://github.com/lajoiepy/Onboard-SDK-ROS onboard-sdk-ros &&\
+    cd onboard-sdk-ros &&\
+    git checkout m100_record
+
+RUN cd ~/dji_ws &&\
+    source /opt/ros/melodic/setup.bash &&\
+    catkin build
 
 ##################################################### Multi-robot SLAM separators package #####################################################
 # --------------------------------------------------- Reset argument ------------------------------------------#
@@ -104,7 +108,7 @@ RUN git clone https://github.com/bramtoula/multi_robot_SLAM_separators.git  && \
     apt-get remove -y unzip wget && \
     rm -rf /var/lib/apt/lists/* && \
     cd ~/multi_robot_SLAM_separators/ros_ws && \
-    source /opt/ros/melodic/setup.bash && \
+    source ~/dji_ws/devel/setup.bash && \
     catkin build && \
     source devel/setup.bash && \
     mkdir ~/multi_robot_SLAM_separators/logs && \
@@ -153,11 +157,6 @@ RUN git clone https://github.com/lajoiepy/blabbermouth.git &&\
     cmake ../src &&\
     make
 
-##################################################### Mavros #############################################################
-# Install Mavros
-RUN apt-get update && apt-get install -y ros-melodic-mavros && \
-    rm -rf /var/lib/apt/lists/* 
-
 ##################################################### Repull and build #####################################################
 # --------------------------------------------------- Reset argument ------------------------------------------#
 ARG repull_and_build=0
@@ -165,7 +164,7 @@ ARG repull_and_build=0
 
 RUN cd multi_robot_SLAM_separators/ros_ws/ && \
     git pull origin master && \
-    source /opt/ros/melodic/setup.bash && \
+    source ~/dji_ws/devel/setup.bash && \
     catkin build && \
     cd ~/rdpgo_ws/src/robust_distributed_slam_module && \
     git pull --recurse-submodules && \
