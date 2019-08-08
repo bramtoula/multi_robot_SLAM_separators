@@ -35,7 +35,7 @@
         <arg name="topic_right_camera_info" value="$(arg topic_right_camera_info)"/>
         <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
 
-        <arg name="log_pos_from_px4" default="false" />
+        <arg name="log_pos" default="false" />
         <arg name="use_estimates_of_poses" value="true" />
 	<arg name="approx_sync" value="true" />
     </include>
