@@ -1,0 +1,14 @@
+<launch>
+ 
+  <arg name="local_robot_id" default="0" />
+  <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
+
+  <group ns="robot_$(arg local_robot_id)">
+    <include file="$(find dji_sdk)/launch/sdk_manifold.launch"/>
+  </group>
+
+
+  <node pkg="rosbag" type="record" name="rosbag_record_log_pos"
+       		args="record -o $(arg logs_location)camera_logs -e /robot_$(arg local_robot_id)/dji_sdk/(.*) /robot_$(arg local_robot_id)/camera/color/camera_info /robot_$(arg local_robot_id)/camera/color/image_raw /robot_$(arg local_robot_id)/camera/infra1/camera_info /robot_$(arg local_robot_id)/camera/infra1/image_rect_raw /robot_$(arg local_robot_id)/camera/infra2/camera_info /robot_$(arg local_robot_id)/camera/infra2/image_rect_raw /tf /tf_static"/>
+
+</launch>
