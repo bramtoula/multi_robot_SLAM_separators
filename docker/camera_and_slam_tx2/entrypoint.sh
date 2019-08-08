@@ -31,7 +31,7 @@ case "$1" in
             ;;
 
         record)
-            roslaunch multi_robot_separators record_camera.launch local_robot_id:=$5--screen
+            roslaunch multi_robot_separators record_camera.launch local_robot_id:=$5 --screen
             ;;
 
         separators)
