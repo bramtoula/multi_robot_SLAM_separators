@@ -58,9 +58,6 @@ def find_separators():
                     # Only send descriptors which havent been sent yet
                     descriptors_to_send = dataHandler.local_descriptors[dataHandler.nb_descriptors_already_sent:]
 
-                    # If no new descriptors, do nothing
-                    if not descriptors_to_send:
-                        continue
                     flatten_desc = [
                         item for sublist in list(descriptors_to_send) for item in sublist]
                     res_matches = s_find_matches_query(flatten_desc)
