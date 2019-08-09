@@ -26,7 +26,7 @@
     <!-- all vars that included.launch requires must be set -->
         <arg name="other_robot_id" value="$(arg other_robot_id)"/>
         <arg name="local_robot_id" value="$(arg local_robot_id)"/>
-        <arg name="frame_id" value="/robot_$(arg local_robot_id)/camera_link"/>
+        <arg name="frame_id" value="/robot_$(arg recorded_id)/camera_link"/>
         <arg name="estimate_stereo_transform_from_tf" value="true" />
 
         <arg name="topic_left_image_rect" value="$(arg topic_left_image_rect)"/>
