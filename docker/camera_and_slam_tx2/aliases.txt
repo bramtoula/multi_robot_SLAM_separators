@@ -13,5 +13,4 @@ alias trigger='docker exec -it $(docker container ls -q) ./entrypoint.sh trigger
 alias separators='docker exec -it $(docker container ls -q) ./entrypoint.sh separators $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID'
 alias bag_sep='docker exec -it $(docker container ls -q) ./entrypoint.sh bag $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID /root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/bag-$LOCAL_ROBOT_ID.bag 0'
 alias record='docker exec -it $(docker container ls -q) ./entrypoint.sh record $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
-alias docker_bash='tx2-docker run -e TZ=America/New_York --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop/$dir_name:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 bash $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
-
+alias docker_bash='tx2-docker run -e TZ=America/New_York --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop/:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -it lajoiepy/realsense-distributed-slam-tx2-px4 bash $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
