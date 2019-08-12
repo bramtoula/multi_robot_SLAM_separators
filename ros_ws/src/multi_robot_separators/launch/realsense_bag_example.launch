@@ -11,17 +11,6 @@
     <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
     <arg name="recorded_id" default="0" />
 
-    <!-- Play the bag within the namespace -->
-    <arg name="node_start_delay" default="30.0" />
-    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
-        <remap from="/robot_$(arg recorded_id)/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
-        <remap from="/robot_$(arg recorded_id)/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
-        <remap from="/robot_$(arg recorded_id)/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
-        <remap from="/robot_$(arg recorded_id)/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
-        <remap from="/robot_$(arg recorded_id)/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
-    </node>
-
-
     <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
     <!-- all vars that included.launch requires must be set -->
         <arg name="other_robot_id" value="$(arg other_robot_id)"/>
@@ -39,6 +28,17 @@
         <arg name="use_estimates_of_poses" value="true" />
 	<arg name="approx_sync" value="true" />
     </include>
+
+    <!-- Play the bag within the namespace -->
+    <arg name="node_start_delay" default="30.0" />
+    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+        <remap from="/robot_$(arg recorded_id)/camera/color/image_raw" to="$(arg topic_rgb_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra1/image_rect_raw" to="$(arg topic_left_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
+        <remap from="/robot_$(arg recorded_id)/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
+    </node>
+
 </launch>
 
 
