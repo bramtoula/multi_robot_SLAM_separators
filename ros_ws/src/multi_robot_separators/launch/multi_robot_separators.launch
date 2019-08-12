@@ -59,7 +59,7 @@
     <node pkg="multi_robot_separators" type="communication" name="communication" output="screen"/>
 
 
-    <arg name="stereo_odom_start_delay" default="15.0" />
+    <arg name="stereo_odom_start_delay" default="0.0" />
     <!-- Stereo Odometry -->
     <node pkg="rtabmap_ros" type="stereo_odometry" name="stereo_odometry" output="screen" launch-prefix="bash -c 'sleep $(arg stereo_odom_start_delay); $0 $@' " >
       <param name="frame_id"      type="string" value="$(arg frame_id)"/>
