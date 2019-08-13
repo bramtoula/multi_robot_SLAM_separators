@@ -2,9 +2,15 @@
  
   <arg name="local_robot_id" default="0" />
   <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
+  
+  <arg name="fcu_port" default="/dev/ttyTHS2" />
+  <arg name="baud_rate" default="115200" />
 
   <group ns="robot_$(arg local_robot_id)">
-    <include file="$(find dji_sdk)/launch/sdk_manifold.launch"/>
+    <include file="$(find dji_sdk)/launch/sdk_manifold.launch">
+       <arg name="fcu_port" value="$(arg fcu_port)" />
+       <arg name="baud_rate" value="$(arg baud_rate)" /> 
+    </include>
   </group>
 
 

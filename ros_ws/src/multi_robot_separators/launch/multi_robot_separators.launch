@@ -21,6 +21,10 @@
 <arg name="log_pos" default="true" />
 <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
 
+<arg name="fcu_port" default="/dev/ttyTHS2" />
+<arg name="baud_rate" default="115200" />
+
+
 <!-- arg name="fcu_url" default="/dev/ttyTHS2:57600" />
 <arg name="gcs_url" default="" />
 <arg name="tgt_system" default="1" />
@@ -88,7 +92,10 @@
 
   <group if="$(arg log_pos)">
     	
-    <include file="$(find dji_sdk)/launch/sdk_manifold.launch"/>
+    <include file="$(find dji_sdk)/launch/sdk_manifold.launch">
+        <arg name="fcu_port" value="$(arg fcu_port)"/>
+        <arg name="baud_rate" value="$(arg baud_rate)"/>
+    </include>
 
     <node pkg="rosbag" type="record" name="rosbag_record_log_pos"
        args="record -o $(arg logs_location)pos_logs -e /robot_$(arg local_robot_id)/dji_sdk/(.*) /robot_$(arg local_robot_id)/odom_info /tf /tf_static"/>

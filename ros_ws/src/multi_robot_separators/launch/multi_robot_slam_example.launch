@@ -10,6 +10,9 @@
 
     <arg name="log_pos" default="true" />
     <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
+    
+    <arg name="fcu_port" default="/dev/ttyTHS2" />
+    <arg name="baud_rate" default="115200" />
 
     <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">
     <!-- all vars that included.launch requires must be set -->
@@ -28,5 +31,7 @@
 
         <arg name="log_pos" value="$(arg log_pos)" />
         <arg name="logs_location" value="$(arg logs_location)" />
+        <arg name="fcu_port" value="$(arg fcu_port)" />
+        <arg name="baud_rate" value="$(arg baud_rate)" />
     </include>
 </launch>
