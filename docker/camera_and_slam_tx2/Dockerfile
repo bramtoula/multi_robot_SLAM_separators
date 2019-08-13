@@ -80,6 +80,8 @@ RUN git clone https://github.com/MISTLab/Buzz.git /home/docker/buzz && \
 RUN apt-get update && apt-get install -y ros-melodic-nmea-msgs \
     && rm -rf /var/lib/apt/lists/*
 
+ARG clone_dji_sdk=unknown
+
 RUN mkdir ~/dji_ws && mkdir ~/dji_ws/src && cd ~/dji_ws/src &&\
     git clone https://github.com/lajoiepy/Onboard-SDK-ROS onboard-sdk-ros &&\
     cd onboard-sdk-ros &&\

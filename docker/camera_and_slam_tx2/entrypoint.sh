@@ -31,11 +31,19 @@ case "$1" in
             ;;
 
         record)
-            roslaunch multi_robot_separators record_camera.launch local_robot_id:=$5 --screen
+            if [ "$#" -eq 5 ]
+                roslaunch multi_robot_separators record_camera.launch local_robot_id:=$5 --screen
+            else
+                roslaunch multi_robot_separators record_camera.launch local_robot_id:=$5  fcu_port:=$6 baud_rate:=$7 --screen
+            fi
             ;;
 
         separators)
-            roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$5 other_robot_id:=$6 --screen
+            if [ "$#" -eq 6 ]
+                roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$5 other_robot_id:=$6 --screen
+            else
+                roslaunch multi_robot_separators multi_robot_slam_example.launch local_robot_id:=$5 other_robot_id:=$6  fcu_port:=$7 baud_rate:=$8 --screen
+            fi
             ;;
 
         bag)
