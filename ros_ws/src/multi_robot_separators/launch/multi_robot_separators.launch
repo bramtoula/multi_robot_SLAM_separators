@@ -12,8 +12,8 @@
 <arg name="topic_rgb_image_rect" />
 
 <arg name="set_fixed_covariance" default="true" />
-<arg name="translation_std" default="0.3" />
-<arg name="rotation_std" default="0.05" />
+<arg name="translation_std" default="0.1" />
+<arg name="rotation_std" default="0.01" />
 
 <arg name="use_estimates_of_poses" default="true" />
 <arg name="approx_sync" default="false" />
