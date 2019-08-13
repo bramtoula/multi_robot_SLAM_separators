@@ -222,4 +222,9 @@ sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfree
 ```
 
 
+## Add swap for better performance
+https://linuxize.com/post/how-to-add-swap-space-on-ubuntu-18-04/
 
+## To avoid Broken Bond problem with multiple computers on the same network
+On each computer, add all the other computer to the `/etc/hosts` file.
+ex: `192.168.12.151  nvidia-desktop`
