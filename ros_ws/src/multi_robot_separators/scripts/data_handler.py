@@ -73,17 +73,26 @@ class DataHandler:
 
         self.local_robot_id = rospy.get_param("local_robot_id")
         self.other_robot_id = rospy.get_param("other_robot_id")
+        self.log_gps = rospy.get_param("log_gps")
+
+        if self.log_gps:
+            from dji_sdk.msg import GlobalPosition
+            rospy.Subscriber("gps_topic", GlobalPosition,
+                                 self.save_gps_queue)
+            self.gps_data_queue = collections.deque()
+
         self.s_add_seps_pose_graph = rospy.ServiceProxy(
             'add_separators_pose_graph', ReceiveSeparators)
         self.s_get_feats = rospy.ServiceProxy(
             'get_features_and_descriptor', GetFeatsAndDesc)
+        self.logs_location = rospy.get_param("logs_location")
 
         self.send_estimates_of_poses = rospy.get_param("use_estimates_of_poses")
         if self.send_estimates_of_poses:
             self.s_get_pose_estimates = rospy.ServiceProxy('get_pose_estimates',PoseEstimates)
 
     def __del__(self):
-        with open('/root/multi_robot_SLAM_separators/logs/kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
+        with open(self.logs_location+'kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
             for id in self.original_ids_of_kf:
                 file.write("%i\n" % id)
         self.sess.close()
@@ -193,6 +202,11 @@ class DataHandler:
                       str(len(self.images_l_queue))+"\n")
         if odom_info.keyFrameAdded:
             self.nb_kf_odom += 1
+
+            # Log gps
+            if self.log_gps:
+                self.log_gps_data(self.nb_kf_odom-1, odom_info.header.stamp)
+
             if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
                 self.nb_kf_skipped += 1
             else:
@@ -398,3 +412,24 @@ class DataHandler:
 
     def get_kf_ids_from_frames_kept_ids(self,frames_kept_ids):
         return list(np.array(self.kf_ids_of_frames_kept)[frames_kept_ids])
+
+    def save_gps_queue(self,gps_data):
+        self.gps_data_queue.append((gps_data.header.stamp.to_sec(), gps_data))
+        if len(self.gps_data_queue) > constants.MAX_GPS_QUEUE_SIZE:
+            self.gps_data_queue.popleft()
+
+    def log_gps_data(self,kf_id, kf_stamp):
+
+        time_ref = kf_stamp.to_sec()
+        # Find closest time stamps of the rgb data
+        gps_stamps = [y[0] for y in self.gps_data_queue]
+        stamp, pos = takeClosest(gps_stamps, time_ref)
+        time_diff = np.abs(stamp-time_ref)
+        gps_data_kept = self.gps_data_queue[pos][1]
+        with open(self.logs_location+'gps_of_kfs_full_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
+            file.write('kf_id: '+str(kf_id)+'\ntime_diff: ' +
+                       str(time_diff)+'\n'+str(gps_data_kept)+'\n')
+        
+        with open(self.logs_location+'gps_of_kfs_short_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
+            file.write(str(stamp)+' '+str(gps_data_kept.latitude)+' '+str(gps_data_kept.longitude)+' '+str(gps_data_kept.altitude)+'\n')
+

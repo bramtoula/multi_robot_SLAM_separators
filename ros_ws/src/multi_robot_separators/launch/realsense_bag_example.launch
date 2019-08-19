@@ -11,6 +11,7 @@
     <arg name="bag" default="/datasets/ours_parking_lot/forward_1.bag" />
     <arg name="recorded_id" default="0" />
 
+
     <!-- Play the bag within the namespace -->
     <arg name="node_start_delay" default="45.0" />
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="-d $(arg node_start_delay) $(arg bag)">
@@ -33,7 +34,8 @@
         <arg name="topic_left_camera_info" value="$(arg topic_left_camera_info)"/>
         <arg name="topic_right_camera_info" value="$(arg topic_right_camera_info)"/>
         <arg name="topic_rgb_image_rect" value="$(arg topic_rgb_image_rect)" />
-
+    
+        <arg name="log_gps" default="true" />
         <arg name="log_pos" default="false" />
         <arg name="use_estimates_of_poses" value="true" />
 	<arg name="approx_sync" value="true" />

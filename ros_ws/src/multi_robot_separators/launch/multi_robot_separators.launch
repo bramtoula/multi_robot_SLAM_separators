@@ -19,6 +19,9 @@
 <arg name="approx_sync" default="false" />
 
 <arg name="log_pos" default="true" />
+<arg name="log_gps" default="false" />
+<arg name="gps_topic_name" default="dji_sdk/global_position" />
+
 <arg name="logs_location" default="/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log/"/>
 
 <arg name="fcu_port" default="/dev/ttyTHS2" />
@@ -49,12 +52,20 @@
    <!-- Also send estimates of poses with separators found. Requires to have a service to compute those advertised -->
     <param name="use_estimates_of_poses" type="bool" value="$(arg use_estimates_of_poses)" />
 
+    <param name="logs_location"      type="string" value="$(arg logs_location)"/>
+    <param name="log_gps" type="bool" value="$(arg log_gps)" />
+    <param name="gps_topic_name"      type="string" value="$(arg gps_topic_name)"/>
+
+
     <!-- Remapping image topics -->
     <remap from="rgb/image_rect" to="$(arg topic_rgb_image_rect)"/>
     <remap from="left/image_rect" to="$(arg topic_left_image_rect)"/>
     <remap from="right/image_rect" to="$(arg topic_right_image_rect)"/>
     <remap from="left/camera_info" to="$(arg topic_left_camera_info)"/>
     <remap from="right/camera_info" to="$(arg topic_right_camera_info)"/>
+
+    <remap from="gps_topic" to="/robot_$(arg local_robot_id)/$(arg gps_topic_name)"/>
+ 
 
     <!-- Nodes to run -->
     <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools" output="screen" />
