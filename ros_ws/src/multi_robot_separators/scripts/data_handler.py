@@ -439,6 +439,8 @@ class DataHandler:
         if not gps_stamps:
             with open(self.logs_location+'gps_of_kfs_full_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
                 file.write('kf_id: '+str(kf_id)+'\n-1\n')
+            with open(self.logs_location+'gps_of_kfs_short_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
+                file.write('-1 -1 -1 -1\n')
             return
         stamp, pos = takeClosest(gps_stamps, time_ref)
         time_diff = np.abs(stamp-time_ref)
