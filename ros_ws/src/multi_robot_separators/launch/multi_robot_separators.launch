@@ -15,6 +15,14 @@
 <arg name="translation_std" default="0.1" />
 <arg name="rotation_std" default="0.01" />
 
+<!-- Parameters of our system -->
+<arg name="netvlad_distance" default="0.13" />
+<arg name="netvlad_dimensions" default="128" />
+<arg name="netvlad_batch_size" default="3" />
+<arg name="netvlad_max_matches_nb" default="20" />
+<arg name="separators_min_inliers" default="5" />
+<arg name="number_of_kf_skipped" default="0" />
+
 <arg name="use_estimates_of_poses" default="true" />
 <arg name="approx_sync" default="false" />
 
@@ -66,6 +74,15 @@
 
     <remap from="gps_topic" to="/robot_$(arg local_robot_id)/$(arg gps_topic_name)"/>
  
+
+    <!-- Parameters of mult-robot-separators nodes -->
+    <param name="netvlad_distance" type="double" value="$(arg netvlad_distance)" />
+    <param name="netvlad_dimensions" type="int" value="$(arg netvlad_dimensions)" />
+    <param name="netvlad_batch_size" type="int" value="$(arg netvlad_batch_size)" />
+    <param name="netvlad_max_matches_nb" type="int" value="$(arg netvlad_max_matches_nb)" />
+    <param name="separators_min_inliers" type="int" value="$(arg separators_min_inliers)" />
+    <param name="number_of_kf_skipped" type="int" value="$(arg number_of_kf_skipped)" />
+
 
     <!-- Nodes to run -->
     <node pkg="multi_robot_separators" type="stereo_cam_geometric_tools" name="stereo_cam_geometric_tools" output="screen" />

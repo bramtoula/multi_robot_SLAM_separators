@@ -2,6 +2,14 @@
     <arg name="local_robot_id" default="0" />
     <arg name="other_robot_id" default="0" />
 
+    <arg name="netvlad_distance" default="0.13" />
+    <arg name="netvlad_dimensions" default="128" />
+    <arg name="netvlad_batch_size" default="3" />
+    <arg name="netvlad_max_matches_nb" default="20" />
+    <arg name="separators_min_inliers" default="5" />
+    <arg name="number_of_kf_skipped" default="0" />
+
+
     <arg name="topic_left_image_rect" value="/robot_$(arg local_robot_id)/camera/infra1/image_rect_raw"/>
     <arg name="topic_right_image_rect" value="/robot_$(arg local_robot_id)/camera/infra2/image_rect_raw"/>
     <arg name="topic_left_camera_info" value="/robot_$(arg local_robot_id)/camera/infra1/camera_info"/>
@@ -29,6 +37,13 @@
         <arg name="frame_id" value="/robot_$(arg recorded_id)/camera_link"/>
         <arg name="estimate_stereo_transform_from_tf" value="true" />
 
+        <arg name="netvlad_distance" value="$(arg netvlad_distance)"/>
+        <arg name="netvlad_dimensions" value="$(arg netvlad_dimensions)"/>
+        <arg name="netvlad_batch_size" value="$(arg netvlad_batch_size)"/>
+        <arg name="netvlad_max_matches_nb" value="$(arg netvlad_max_matches_nb)"/>
+        <arg name="separators_min_inliers" value="$(arg separators_min_inliers)"/>
+        <arg name="number_of_kf_skipped" value="$(arg number_of_kf_skipped)"/>
+
         <arg name="topic_left_image_rect" value="$(arg topic_left_image_rect)"/>
         <arg name="topic_right_image_rect" value="$(arg topic_right_image_rect)"/>
         <arg name="topic_left_camera_info" value="$(arg topic_left_camera_info)"/>
@@ -42,5 +57,3 @@
     </include>
 
 </launch>
-
-

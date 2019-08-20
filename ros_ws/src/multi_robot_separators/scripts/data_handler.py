@@ -91,6 +91,18 @@ class DataHandler:
         if self.send_estimates_of_poses:
             self.s_get_pose_estimates = rospy.ServiceProxy('get_pose_estimates',PoseEstimates)
 
+
+        # Read params
+        self.netvlad_distance = rospy.get_param("netvlad_distance")
+        self.netvlad_dimensions = rospy.get_param("netvlad_dimensions")
+        self.netvlad_batch_size = rospy.get_param("netvlad_batch_size")
+        self.netvlad_max_matches_nb = rospy.get_param("netvlad_max_matches_nb")
+        self.number_of_kf_skipped = rospy.get_param("number_of_kf_skipped")
+        # Log params to file
+        with open(self.logs_location+'params_'+str(self.local_robot_id)+'.txt', 'a') as file:
+            file.write('netvlad_distance: '+str(self.netvlad_distance)+'\nnetvlad_dimensions: ' +
+                       str(self.netvlad_dimensions)+'\nnetvlad_batch_size: '+str(self.netvlad_batch_size)+'\nnetvlad_max_matches_nb: '+str(self.netvlad_max_matches_nb)+'\nnumber_of_kf_skipped: '+str(self.number_of_kf_skipped)+'\nseparators_min_inliers: '+str(rospy.get_param("separators_min_inliers"))+'\n')
+
     def __del__(self):
         with open(self.logs_location+'kf_orig_ids_'+str(self.local_robot_id)+'.txt', 'w') as file:
             for id in self.original_ids_of_kf:
@@ -134,7 +146,7 @@ class DataHandler:
         rospy.loginfo("Computing descriptors. Currently already computed " +
                       str(len(self.local_descriptors))+" netvlad descriptors. Number of frames left in the queue:"+str(len(self.images_rgb_kf)))
         # If so, compute and store descriptors (as much as we can up to the batch size)
-        nb_images_batch = min(len(self.images_rgb_kf), constants.BATCH_SIZE)
+        nb_images_batch = min(len(self.images_rgb_kf), self.netvlad_batch_size)
         batch = collections.deque(self.images_rgb_kf[i] for i in range(0, nb_images_batch)) # self.images_rgb_kf[:nb_images_batch]
 
         if len(batch) > 0:
@@ -143,7 +155,7 @@ class DataHandler:
 
             rospy.loginfo("Saving descriptors")
             self.local_descriptors.extend(
-                descriptors[:, :constants.NETVLAD_DIMS].tolist())
+                descriptors[:, :self.netvlad_dimensions].tolist())
 
             # Remove rgb images from memory
             for i in range(0, nb_images_batch):
@@ -179,7 +191,7 @@ class DataHandler:
         indexes_smallest_values_all_frames = np.argsort(smallest_values_each_frame)
 
         matches = collections.deque()
-        for i in range(min(len(indexes_smallest_values_all_frames), constants.MAX_MATCHES)):
+        for i in range(min(len(indexes_smallest_values_all_frames), self.netvlad_max_matches_nb)):
             idx_local = indexes_smallest_values_all_frames[i]
             idx_other = indexes_smallest_values_each_frame[indexes_smallest_values_all_frames[i]]
 
@@ -187,7 +199,7 @@ class DataHandler:
             if idx_other in [match[1] for match in matches]:
                 continue
         
-            if distances[idx_local, idx_other] < constants.MATCH_DISTANCE:
+            if distances[idx_local, idx_other] < self.netvlad_distance:
                 matches.append((idx_local, idx_other))
             else:
                 break
@@ -207,7 +219,7 @@ class DataHandler:
             if self.log_gps:
                 self.log_gps_data(self.nb_kf_odom-1, odom_info.header.stamp)
 
-            if self.nb_kf_skipped < constants.NB_KF_SKIPPED:
+            if self.nb_kf_skipped < self.number_of_kf_skipped:
                 self.nb_kf_skipped += 1
             else:
                 # Look for the index of the saved image corresponding to the timestamp
@@ -271,7 +283,8 @@ class DataHandler:
     def find_matches_service(self, find_matches_req):
         rospy.loginfo("Reached service")
 
-        self.received_descriptors.extend(np.array(find_matches_req.new_netvlad_descriptors).reshape(-1, constants.NETVLAD_DIMS).tolist())
+        self.received_descriptors.extend(np.array(
+            find_matches_req.new_netvlad_descriptors).reshape(-1, self.netvlad_dimensions).tolist())
 
         descriptors_vec = collections.deque()
         kpts3d_vec = collections.deque()
