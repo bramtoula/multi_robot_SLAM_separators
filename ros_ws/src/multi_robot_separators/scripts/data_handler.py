@@ -11,7 +11,7 @@ from multi_robot_separators.srv import *
 from sensor_msgs.msg import Image
 from rtabmap_ros.msg import OdomInfo
 import collections
-
+import copy
 from scipy.spatial.distance import cdist
 
 from bisect import bisect_left
@@ -435,7 +435,8 @@ class DataHandler:
 
         time_ref = kf_stamp.to_sec()
         # Find closest time stamps of the rgb data
-        gps_stamps = [y[0] for y in self.gps_data_queue]
+        gps_queue = copy.deepcopy(self.gps_data_queue)
+        gps_stamps = [y[0] for y in gps_queue]
         if not gps_stamps:
             with open(self.logs_location+'gps_of_kfs_full_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
                 file.write('kf_id: '+str(kf_id)+'\n-1\n')
@@ -444,7 +445,7 @@ class DataHandler:
             return
         stamp, pos = takeClosest(gps_stamps, time_ref)
         time_diff = np.abs(stamp-time_ref)
-        gps_data_kept = self.gps_data_queue[pos][1]
+        gps_data_kept = gps_queue[pos][1]
         with open(self.logs_location+'gps_of_kfs_full_robot_'+str(self.local_robot_id)+'.txt', 'a') as file:
             file.write('kf_id: '+str(kf_id)+'\ntime_diff: ' +
                        str(time_diff)+'\n'+str(gps_data_kept)+'\n')
