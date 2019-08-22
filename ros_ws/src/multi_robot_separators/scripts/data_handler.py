@@ -215,10 +215,6 @@ class DataHandler:
         if odom_info.keyFrameAdded:
             self.nb_kf_odom += 1
 
-            # Log gps
-            if self.log_gps:
-                self.log_gps_data(self.nb_kf_odom-1, odom_info.header.stamp)
-
             if self.nb_kf_skipped < self.number_of_kf_skipped:
                 self.nb_kf_skipped += 1
             else:
@@ -275,6 +271,9 @@ class DataHandler:
                 # Keep the id based on all the kf seen by the odometry
                 self.kf_ids_of_frames_kept.append(self.nb_kf_odom-1)
 
+                # Log gps
+                if self.log_gps:
+                    self.log_gps_data(self.nb_kf_odom-1, odom_info.header.stamp)
 
                 # Store the original frame id of the kf added
                 self.original_ids_of_kf.append(
