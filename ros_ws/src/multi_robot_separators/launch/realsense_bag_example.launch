@@ -28,6 +28,7 @@
         <remap from="/robot_$(arg recorded_id)/camera/infra2/image_rect_raw" to="$(arg topic_right_image_rect)"/>
         <remap from="/robot_$(arg recorded_id)/camera/infra1/camera_info" to="$(arg topic_left_camera_info)"/>
         <remap from="/robot_$(arg recorded_id)/camera/infra2/camera_info" to="$(arg topic_right_camera_info)"/>
+        <remap from="/robot_$(arg recorded_id)/dji_sdk/global_position" to="/robot_$(arg local_robot_id)/dji_sdk/global_position"/>        
     </node>
 
     <include file="$(find multi_robot_separators)/launch/multi_robot_separators.launch">

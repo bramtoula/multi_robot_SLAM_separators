@@ -1,8 +1,8 @@
 <launch>
     <arg name="local_robot_id" default="0" />  
-    <arg name="other_robot_id" default="0" />  
-    <arg name="bag" default="/datasets/kitti/dataset/kitti_data_odometry_color_sequence_00_part1.bag" />
-    <arg name="use_estimates_of_poses" default="true" />
+    <arg name="other_robot_id" default="1" />  
+    <arg name="bag" default="/bag-0.bag" />
+    <arg name="use_estimates_of_poses" default="false" />
 
     <arg name="netvlad_distance" default="0.13" />
     <arg name="netvlad_dimensions" default="128" />
@@ -12,8 +12,8 @@
     <arg name="number_of_kf_skipped" default="0" />
 
     <!-- Play the bag within the namespace -->
-    <arg name="node_start_delay" default="10.0" />  
-    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag) -r 0.2" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
+    <arg name="node_start_delay" default="45.0" />  
+    <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag) -d $(arg node_start_delay) -r 0.05">
     <remap from="/kitti/camera_color_left/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect"/>
     <remap from="/kitti/camera_color_right/image_rect" to="/robot_$(arg local_robot_id)/kitti/camera_color_right/image_rect"/>
     <remap from="/kitti/camera_color_left/camera_info" to="/robot_$(arg local_robot_id)/kitti/camera_color_left/camera_info"/>
@@ -34,7 +34,7 @@
         <arg name="topic_right_camera_info" value="/robot_$(arg local_robot_id)/kitti/camera_color_right/camera_info"/>
         <arg name="topic_rgb_image_rect" value="/robot_$(arg local_robot_id)/kitti/camera_color_left/image_rect" />
 
-        <arg name="log_pos_from_px4" default="false" />
+        <arg name="log_pos" default="false" />
         <arg name="use_estimates_of_poses" value="$(arg use_estimates_of_poses)" />
 
         <arg name="netvlad_distance" value="$(arg netvlad_distance)"/>
