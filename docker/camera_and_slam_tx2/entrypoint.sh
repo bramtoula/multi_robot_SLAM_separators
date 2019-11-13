@@ -57,6 +57,10 @@ case "$1" in
             roslaunch multi_robot_separators realsense_bag_example.launch local_robot_id:=$5 other_robot_id:=$6 bag:=$7 recorded_id:=$8 netvlad_distance:=$9 netvlad_dimensions:=${10} netvlad_batch_size:=${11} netvlad_max_matches_nb:=${12} separators_min_inliers:=${13} number_of_kf_skipped:=${14} --screen
             ;;
 
+	kitti_bag_params)
+		    roslaunch multi_robot_separators kitti_example.launch local_robot_id:=$5 other_robot_id:=$6 bag:=$7 recorded_id:=$8 netvlad_distance:=$9 netvlad_dimensions:=${10} netvlad_batch_size:=${11} netvlad_max_matches_nb:=${12} separators_min_inliers:=${13} number_of_kf_skipped:=${14} --screen
+            ;;
+
         bash)
             /bin/bash
             ;;

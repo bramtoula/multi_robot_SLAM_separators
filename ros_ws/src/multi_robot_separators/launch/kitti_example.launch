@@ -4,6 +4,13 @@
     <arg name="bag" default="/datasets/kitti/dataset/kitti_data_odometry_color_sequence_00_part1.bag" />
     <arg name="use_estimates_of_poses" default="true" />
 
+    <arg name="netvlad_distance" default="0.13" />
+    <arg name="netvlad_dimensions" default="128" />
+    <arg name="netvlad_batch_size" default="3" />
+    <arg name="netvlad_max_matches_nb" default="20" />
+    <arg name="separators_min_inliers" default="5" />
+    <arg name="number_of_kf_skipped" default="0" />
+
     <!-- Play the bag within the namespace -->
     <arg name="node_start_delay" default="10.0" />  
     <node pkg="rosbag" type="play" name="playback_$(arg local_robot_id)" args="$(arg bag) -r 0.2" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " >
@@ -29,6 +36,13 @@
 
         <arg name="log_pos_from_px4" default="false" />
         <arg name="use_estimates_of_poses" value="$(arg use_estimates_of_poses)" />
+
+        <arg name="netvlad_distance" value="$(arg netvlad_distance)"/>
+        <arg name="netvlad_dimensions" value="$(arg netvlad_dimensions)"/>
+        <arg name="netvlad_batch_size" value="$(arg netvlad_batch_size)"/>
+        <arg name="netvlad_max_matches_nb" value="$(arg netvlad_max_matches_nb)"/>
+        <arg name="separators_min_inliers" value="$(arg separators_min_inliers)"/>
+        <arg name="number_of_kf_skipped" value="$(arg number_of_kf_skipped)"/>
     </include>
 </launch>
 
