@@ -221,12 +221,27 @@ class DataHandler:
                 # Look for the index of the saved image corresponding to the timestamp
                 try:
                     time_ref = odom_info.header.stamp.to_sec()
-                    idx_images_l_q = [y[0] for y in self.images_l_queue].index(
-                        time_ref)
-                    idx_images_r_q = [y[0] for y in self.images_r_queue].index(
-                        time_ref)
+                    
+                    #idx_images_l_q = [y[0] for y in self.images_l_queue].index(time_ref)
+                    #idx_images_r_q = [y[0] for y in self.images_r_queue].index(time_ref)
+                    # Find closest time stamps for the left and right images
+                    stamp, pos = takeClosest([y[0] for y in self.images_l_queue], time_ref)
+                    if np.abs(stamp-time_ref) > (constants.MAX_TIME_DIFF_RGB_STEREO):
+                        rospy.logwarn(
+                            "Keyframe stereo timestamps too far from the left timestamps")
+                        return
+                    else:
+                        idx_images_l_q = pos
 
-                    # Find closest time stamps of the rgb data
+                    stamp, pos = takeClosest([y[0] for y in self.images_r_queue], time_ref)
+                    if np.abs(stamp-time_ref) > (constants.MAX_TIME_DIFF_RGB_STEREO):
+                        rospy.logwarn(
+                            "Keyframe stereo timestamps too far from the left timestamps")
+                        return
+                    else:
+                        idx_images_r_q = pos
+                    
+                    # Find closest time stamps of the rgb data                    
                     rgb_stamps = [y[0] for y in self.images_rgb_queue]
                     stamp, pos = takeClosest(rgb_stamps, time_ref)
                     if np.abs(stamp-time_ref) > (constants.MAX_TIME_DIFF_RGB_STEREO):
