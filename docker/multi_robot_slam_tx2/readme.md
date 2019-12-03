@@ -1,4 +1,4 @@
-**STILL WIP (Not everything is online, working, or detailed yet)**
+**Detailed documentation coming soon. These steps are no longer required with the latest Jetpack versions, which provide an nvidia runtime with Docker.**
 
 The following steps were necessary on the TX2 to run through Docker:
 
@@ -10,7 +10,6 @@ sudo apt-get update
 sudo apt-get install rhash curl libuv1 libsqlite3-dev libsuitesparse-dev libfreenect-dev libdc1394-22-dev libglvnd-dev libopencv-contrib3.2 libmetis-dev libboost-all-dev libpcl-dev liblz4-dev libogre-1.9-dev liburdfdom-dev liblog4cxx-dev libtinyxml2-dev libassimp4 libyaml-cpp0.5v5
 ```
 
-There is also the need for some other libopencv packages, but I'm not sure if the best way is to copy them directly in the container, or figure out how to install them through the package manager yet...
 
 Build the Docker image from this directory, and run it (with tx2-docker if you are using the wrapper from Tegra Docker):
 ```

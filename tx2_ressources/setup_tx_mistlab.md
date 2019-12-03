@@ -1,4 +1,4 @@
-# Steps we used to setup our TX2s
+# Steps we used to setup our TX2s using Jetpack 4.2. (more recent Jetpack versions make the use of Docker easier)
 
 Steps in order to use a TX2 GPU in Docker, with B.A.T.M.A.N., a TP-Link Archer T2UH dongle, a RealSense D435, based on Jetpack 4.2.
 
