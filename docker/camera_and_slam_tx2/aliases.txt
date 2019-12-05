@@ -1,10 +1,11 @@
 export MASK=12
-export MASTER=151
+export MASTER=150
 export OWN_IP=151
 export LOCAL_ROBOT_ID=1
 export OTHER_ROBOT_ID=2
 
-export NETVLAD_DISTANCE=0.13
+
+export NETVLAD_DISTANCE=0.15
 export MIN_SEP_INLIERS=5
 export NETVLAD_MAX_MATCHES=20
 export NETVLAD_BATCH_SIZE=3
@@ -24,3 +25,4 @@ alias record='docker exec -it $(docker container ls -q) ./entrypoint.sh record $
 alias docker_bash='dir_name="$(date +%Y-%m-%d_%H-%M-%S)_${NETVLAD_DISTANCE}_${MIN_SEP_INLIERS}" && \mkdir -p /home/nvidia/Desktop/$dir_name/datasets && \tx2-docker run -e TZ=America/New_York --net host --privileged -v /dev/bus/usb:/dev/bus/usb -v /home/nvidia/Desktop/$dir_name:/root/rdpgo_ws/src/robust_distributed_slam_module/scripts/log -v /home/nvidia/Desktop/bag-$LOCAL_ROBOT_ID.bag:/bag-$LOCAL_ROBOT_ID.bag -it bramtoula/realsense-distributed-slam-tx2-dji bash $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID'
 alias bag_sep_params='docker exec -it $(docker container ls -q) ./entrypoint.sh bag_params $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID /bag-$LOCAL_ROBOT_ID.bag 0 $NETVLAD_DISTANCE $NETVLAD_DIMENSIONS $NETVLAD_BATCH_SIZE $NETVLAD_MAX_MATCHES $MIN_SEP_INLIERS $NB_KF_SKIPPED'
 alias cleancache='sudo sh -c "echo 3 > /proc/sys/vm/drop_caches"'
+alias kitti_params='docker exec -it $(docker container ls -q) ./entrypoint.sh kitti_bag_params $MASK $MASTER $OWN_IP $LOCAL_ROBOT_ID $OTHER_ROBOT_ID /bag-$LOCAL_ROBOT_ID.bag 0 $NETVLAD_DISTANCE $NETVLAD_DIMENSIONS $NETVLAD_BATCH_SIZE $NETVLAD_MAX_MATCHES $MIN_SEP_INLIERS $NB_KF_SKIPPED'
