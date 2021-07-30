@@ -127,6 +127,7 @@ ARG rebuild_rdpgo=0
 RUN mkdir ~/rdpgo_ws && mkdir ~/rdpgo_ws/src && cd ~/rdpgo_ws/src &&\
     git clone https://github.com/lajoiepy/robust_distributed_slam_module.git robust_distributed_slam_module &&\
     cd robust_distributed_slam_module &&\
+    git checkout DOOR-SLAM-1.0 &&\
     git submodule update --init --recursive
 
 # Install Robust Distributed Mapper
