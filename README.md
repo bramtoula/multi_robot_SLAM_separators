@@ -1,4 +1,3 @@
-# multi_robot_SLAM_separators
-The goal of this project is to detect inter robot loop closures (transforms) between frames of the same places encountered by different robots for multi-robot SLAM.
+The repository contains the front-end of DOOR-SLAM ([paper](https://arxiv.org/abs/1909.12198)).
 
-Documentation coming soon!
+For usage of DOOR-SLAM, please have a look at the [main repository](https://github.com/MISTLab/DOOR-SLAM) and [documentation](https://mistlab.ca/DOOR-SLAM/).
